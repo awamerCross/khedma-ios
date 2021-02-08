@@ -1,0 +1,47 @@
+{
+  "expo": {
+    "name": "خدمه",
+    "slug": "khedmah",
+    "privacy": "public",
+    "platforms": [
+      "ios",
+      "android"
+    ],
+    "version": "9.2.9",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "splash": {
+      "image": "./assets/splash.png",
+      "resizeMode": "cover",
+      "backgroundColor": "#ffffff"
+    },
+    "updates": {
+      "fallbackToCacheTimeout": 0
+    },
+    "assetBundlePatterns": [
+      "**/*"
+    ] ,
+    "ios": {
+      "supportsTablet": false,
+      "bundleIdentifier": "com.shabaka.khedmh",
+      "infoPlist": {
+        "NSCameraUsageDescription": "We need this permession to add photos to your ads.",
+        "NSLocationWhenInUseUsageDescription": "app need location to show the nearest ads of you.",
+        "NSLocationAlwaysUsageDescription": "app need location to show the nearest ads of you.",
+        "NSMotionUsageDescription": "app need location to show the nearest ads of you.",
+        "NSPhotoLibraryAddUsageDescription": "We need this permession to add photos to your ads.",
+        "NSPhotoLibraryUsageDescription": "We need this permession to add photos to your ads"
+      }
+    },
+    "android": {
+      "package": "com.shabaka.khedmahh",
+      "permissions": [ "CAMERA", "RECORD_AUDIO", "CAMERA_ROLL","READ_PHONE_STATE","NOTIFICATIONS","MEDIA_LIBRARY","MEDIA_LIBRARY_WRITE_ONLY" ],
+      "versionCode": 62,
+      "config": {
+        "googleMaps": {
+          "apiKey": "AIzaSyBCtrxqozj9xLkL58Frh0Gl4fiQZ_oATZI"
+        }
+      }
+    }
+  }
+}
