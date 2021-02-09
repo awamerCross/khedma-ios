@@ -50,14 +50,6 @@ class SelectCategory extends Component {
 
     async componentWillMount() {
         this.runPlaceHolder();
-        axios.post(`${CONST.url}sub_categories`, {
-            lang : this.props.lang ,
-            id   : 1
-        }).then( (response)=> {
-            this.setState({
-                sub_categories: response.data.data
-            });
-        });
 
         axios.post(`${CONST.url}categoriesList`, {
             lang: this.props.lang ,

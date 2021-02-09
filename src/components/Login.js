@@ -8,7 +8,7 @@ import {
     TouchableOpacity,
     KeyboardAvoidingView,
     AsyncStorage,
-    ScrollView, ActivityIndicator
+    ScrollView, ActivityIndicator, Picker
 } from 'react-native';
 import {
     Container,
@@ -18,12 +18,11 @@ import {
     Input,
     Label,
     Icon,
-    Picker,
     Toast,
     Title,
     Button,
     Header,
-    Left, Body, Right
+    Left, Body, Right, CheckBox
 } from 'native-base'
 import {connect}         from "react-redux";
 import { userLogin,profile,tempAuth,logout} from "../actions";
@@ -37,6 +36,7 @@ import {NavigationEvents} from "react-navigation";
 const  base_url     = 'http://plus.4hoste.com/api/';
 import CONST from '../consts';
 import * as Animatable from "react-native-animatable";
+import Modal from "react-native-modal";
 import styles from '../../assets/style'
 
 class Login extends Component {
@@ -54,6 +54,8 @@ class Login extends Component {
             isLoaded  : false,
             passwordStatus: 0,
             phoneStatus: 0,
+            namCode: I18n.t('keyCountry'),
+            modelCode: false,
         };
 
 
@@ -71,6 +73,28 @@ class Login extends Component {
             }).then(()=>{
             this.setState({spinner: false});
         });
+    }
+
+    toggleModal (type) {
+
+        if (type === 'code'){
+            this.setState({
+                modelCode    : !this.state.modelCode
+            });
+        }
+
+    }
+
+    selectId (type, id) {
+
+        if (type === 'code'){
+            this.setState({
+                modelCode       : !this.state.modelCode,
+                namCode         : id,
+                key             : id
+            });
+        }
+
     }
 
     activeInput(type) {
@@ -285,25 +309,52 @@ class Login extends Component {
                                         </View>
                                     </View>
                                     <View style={[ styles.flex_40 ]}>
-                                        <View style={[  {   paddingHorizontal : 0, borderWidth : 1, borderColor : this.state.key ? '#FB4516' : '#9E9B98' , borderLeftWidth : 0,top : 10, height : 50}]} regular>
-                                            <Picker
-                                                mode               ="dropdown"
-                                                style              ={{ color: '#9a9a9a',backgroundColor:'transparent' }} iosHeader={I18n.translate('keyCountry')}
-                                                headerBackButtonText={I18n.translate('goBack')}
-                                                selectedValue       ={this.state.key}
-                                                onValueChange      ={this.onValueChange.bind(this)} //ios
-                                                textStyle          ={{ color: "#363636", paddingLeft  : 5, paddingRight : 5, fontSize : 12, paddingTop : 8}}
-                                                itemTextStyle      ={{ color: '#363636' }}>
-                                                {
-                                                    this.state.codes.map((code, i) => {
-                                                        return <Picker.Item style={{color: "#363636"}}  key={i} value={code} label={code} />
-                                                    })
-                                                }
-                                            </Picker>
-                                            <Icon style={[ styles.position_A, {color: "#363636", fontSize:13, right : 5, top: 19} ]} name='down' type="AntDesign"/>
-                                        </View>
+                                        <TouchableOpacity onPress={() => this.toggleModal('code')} style={[ styles.Width_100 , styles.paddingHorizontal_10 , styles.rowGroup, styles.Border, this.state.key !== null ? styles.borderRed : styles.borderGray, { paddingVertical : 14.5, marginTop : 10 }]}>
+                                            <Text style={[styles.textRegular, styles.textSize_11, styles.text_black]}>
+                                                { this.state.namCode }
+                                            </Text>
+                                            <Icon style={[styles.textSize_14, styles.text_gray]} type="AntDesign" name='down' />
+                                        </TouchableOpacity>
                                     </View>
                                 </View>
+
+                                <Modal isVisible={this.state.modelCode} onBackdropPress={() => this.toggleModal('code')} style={[styles.bottomCenter, styles.Width_100]}>
+                                    <View style={[styles.overHidden, styles.bg_White, styles.Width_100, styles.position_R, styles.top_20, { borderTopLeftRadius: 30, borderTopRightRadius: 30 }]}>
+
+                                        <View style={[styles.paddingHorizontal_10, styles.marginVertical_10]}>
+                                            <ScrollView style={{ height: 300, width: '100%' }}>
+                                                <View>
+                                                    {
+                                                        this.state.codes.map((key, index) => {
+                                                                return (
+                                                                    <TouchableOpacity
+                                                                        key={index.toString()}
+                                                                        style={[styles.rowGroup, styles.marginVertical_10]}
+                                                                        onPress={() => this.selectId('code', key)}
+                                                                    >
+                                                                        <View style={[styles.overHidden, styles.rowRight]}>
+                                                                            <CheckBox
+                                                                                style={[styles.checkBox, styles.bg_black, styles.borderBlack]}
+                                                                                color={styles.text_White}
+                                                                                selectedColor={styles.text_White}
+                                                                                checked={this.state.key === key}
+                                                                            />
+                                                                            <Text style={[styles.textRegular, styles.text_black, styles.textSize_16, styles.paddingHorizontal_20]}>
+                                                                                {key}
+                                                                            </Text>
+                                                                        </View>
+                                                                    </TouchableOpacity>
+                                                                )
+                                                            }
+                                                        )
+                                                    }
+                                                </View>
+                                            </ScrollView>
+                                        </View>
+
+                                    </View>
+                                </Modal>
+
                                 <View style={[ styles.Width_100, styles.marginVertical_10 ]}>
                                     {/*<Icon style={styles.icon_input} active type="SimpleLineIcons" name='lock'/>*/}
                                     {/*<Label style={styles.label}>{I18n.translate('password')}</Label>*/}

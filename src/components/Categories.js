@@ -23,7 +23,7 @@ import {
     Picker,
     Input,
     Item,
-    Toast, ListItem, Radio
+    Toast, ListItem, Radio, CheckBox
 } from 'native-base';
 import I18n from "ex-react-native-i18n";
 const width = Dimensions.get('window').width;
@@ -72,10 +72,55 @@ class Categories extends Component {
             year            : null,
             nameLength      : '',
 
+            nameCar: I18n.t('choose_model'),
+            modelCar: false,
+
         };
 
         if (Platform.OS === 'android') {
             UIManager.setLayoutAnimationEnabledExperimental(true);
+        }
+
+    }
+
+    toggleModal (type) {
+
+        if (type === 'car'){
+            this.setState({
+                modelCar           : !this.state.modelCar,
+            });
+        }
+
+    }
+
+    selectId (type, id) {
+
+        if (type === 'car'){
+            this.setState({
+                modelCar             : !this.state.modelCar,
+                nameCar              : id,
+                year                 : id,
+                blogs                : [],
+                page                 : 0
+            },()=>{
+
+                axios.post(`${CONST.url}get-blogs`, {
+                    category_id      : this.props.navigation.state.params.category_id,
+                    model            : id
+                }).then( (response)=> {
+                    this.setState({
+                        blogs   :  response.data.data,
+                        spinner : false
+                    });
+                    if (response.data.data.length == 0){
+                        CONST.showToast(I18n.t('no_results'),'danger')
+                    }
+                }).catch((e =>{
+                    this.setState({
+                        spinner : false
+                    });
+                }))
+            });
         }
 
     }
@@ -260,33 +305,6 @@ class Categories extends Component {
         this.allBlogs()
     }
 
-    onValueYear(value) {
-
-        this.setState({
-            year        : value,
-            blogs       : [],
-            page        : 0
-        });
-
-        axios.post(`${CONST.url}get-blogs`, {
-            category_id      : this.props.navigation.state.params.category_id,
-            model            : value
-        }).then( (response)=> {
-            this.setState({
-                blogs   :  response.data.data,
-                spinner : false
-            });
-            if (response.data.data.length == 0){
-                CONST.showToast(I18n.t('no_results'),'danger')
-            }
-        }).catch((e=>{
-            this.setState({
-                spinner : false
-            });
-        }))
-
-    }
-
     noResults() {
         return (
             <View style={[ styles.no_data ,{flexGrow : 1 } ]}>
@@ -370,37 +388,58 @@ class Categories extends Component {
                 </Header>
                 <Content contentContainerStyle={[ styles.bgFullWidth ]} >
 
-                    {
-                        (this.props.navigation.state.params.category_id == 61) ?
-                            <View style={[ styles.paddingHorizontal_10 ]}>
-                                <Item style={[ styles.itemPiker_second, styles.marginVertical_10 ]} regular>
-                                    <Icon style={[ styles.iconPicker ]} name='down' type="AntDesign"/>
-                                    <Picker
-                                        iosHeader={I18n.translate('choose_model')}
-                                        headerBackButtonText={I18n.translate('goBack')}
-                                        mode="dropdown"
-                                        placeholder={I18n.translate('choose_model')}
-                                        placeholderStyle={{ color: "#444", writingDirection: 'rtl', width : '100%',fontFamily : 'CairoRegular' }}
-                                        placeholderIconColor="#444"
-                                        style={{backgroundColor:'transparent',color: '#444', width : '100%', writingDirection: 'rtl',fontFamily : 'CairoRegular'}}
-                                        selectedValue={this.state.year}
-                                        itemTextStyle={{ color: '#444', width : '100%', writingDirection: 'rtl',fontFamily : 'CairoRegular' }}
-                                        textStyle={{ color: "#444" , width : '100%', writingDirection: 'rtl',fontFamily : 'CairoRegular',paddingLeft : 5, paddingRight: 5 }}
-                                        onValueChange={this.onValueYear.bind(this)}>
+                    <View style={[ styles.paddingHorizontal_10 ]}>
+                        {
+                            (this.props.navigation.state.params.category_id == 61) ?
+                                <TouchableOpacity onPress={() => this.toggleModal('car')} style={[ styles.clickFunctionHome, styles.flex_100, styles.Width_100, styles.marginVertical_10, styles.paddingHorizontal_10, styles.bg_White, styles.height_50 ]}>
+                                    <Text style={[styles.textRegular, styles.textSize_11, styles.text_black]}>
+                                        { this.state.nameCar }
+                                    </Text>
+                                    <Icon style={[styles.textSize_14, styles.text_gray]} type="AntDesign" name='down' />
+                                </TouchableOpacity>
+                                :
+                                null
+                        }
+                    </View>
 
-                                        <Picker.Item style={styles.itemPicker} label={I18n.translate('choose_model')} value={null} />
+                    <Modal isVisible={this.state.modelCar} onBackdropPress={() => this.toggleModal('car')} style={[styles.bottomCenter, styles.Width_100]}>
+                        <View style={[styles.overHidden, styles.bg_White, styles.Width_100, styles.position_R, styles.top_20, { borderTopLeftRadius: 30, borderTopRightRadius: 30 }]}>
 
+                            <View style={[styles.paddingHorizontal_10, styles.marginVertical_10]}>
+
+                                <ScrollView style={{ height: 300, width: '100%' }}>
+                                    <View>
                                         {
-                                            this.state.years.map((year, i) => (
-                                                <Picker.Item style={styles.itemPicker} key={i} label={year} value={year} />
-                                            ))
+                                            this.state.years.map((year, index) => {
+                                                    return (
+                                                        <TouchableOpacity
+                                                            key={index.toString()}
+                                                            style={[styles.rowGroup, styles.marginVertical_10]}
+                                                            onPress={() => this.selectId('car', year)}
+                                                        >
+                                                            <View style={[styles.overHidden, styles.rowRight]}>
+                                                                <CheckBox
+                                                                    style={[styles.checkBox, styles.bg_black, styles.borderBlack]}
+                                                                    color={styles.text_White}
+                                                                    selectedColor={styles.text_White}
+                                                                    checked={this.state.year === year}
+                                                                />
+                                                                <Text style={[styles.textRegular, styles.text_black, styles.textSize_16, styles.paddingHorizontal_20]}>
+                                                                    {year}
+                                                                </Text>
+                                                            </View>
+                                                        </TouchableOpacity>
+                                                    )
+                                                }
+                                            )
                                         }
-                                    </Picker>
-                                </Item>
+                                    </View>
+                                </ScrollView>
+
                             </View>
-                            :
-                            null
-                    }
+
+                        </View>
+                    </Modal>
 
                     {
                         (this.state.blogs.length == 0 && this.state.spinner == false) ?

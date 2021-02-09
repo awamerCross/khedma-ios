@@ -2,6 +2,7 @@ import axios from 'axios';
 import CONST from '../consts'
 import {Toast} from "native-base";
 import {AsyncStorage} from "react-native";
+import I18n from "ex-react-native-i18n";
 
 
 export const profile = (token ) => {
@@ -15,8 +16,6 @@ export const profile = (token ) => {
         }).then(response => {
             const data = response.data;
                 dispatch({type: 'profile_data', data})
-
-
         })
     }
 };
@@ -24,8 +23,8 @@ export const profile = (token ) => {
 
 
 export const updateProfile = (data) => {
-    return (dispatch) => {
-        axios({
+    return async (dispatch) => {
+        await axios({
             url: CONST.url + 'editProfile',
             method: 'POST',
             data: {
@@ -43,12 +42,12 @@ export const updateProfile = (data) => {
             }}).then(response => {
 
                 const data = response.data;
-                dispatch({type: 'update_profile', data})
+                dispatch({type: 'update_profile', data});
 
 
         }).catch(() => {
-
-        })
+            CONST.showToast(I18n.t('eerrr'),  "danger");
+        });
     }
 };
 

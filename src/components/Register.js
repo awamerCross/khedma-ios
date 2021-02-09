@@ -7,7 +7,7 @@ import {
     View,
     Image,
     KeyboardAvoidingView,
-    ActivityIndicator, TouchableOpacity
+    ActivityIndicator, TouchableOpacity, ScrollView
 } from 'react-native';
 import {
     Container,
@@ -16,14 +16,13 @@ import {
     Item,
     Input,
     Label,
-    Picker,
     Icon,
     Title,
     Button,
     Toast,
     Body,
     Left,
-    Right, Header
+    Right, Header, CheckBox
 } from 'native-base'
 
 import * as ImagePicker from 'expo-image-picker';
@@ -39,6 +38,7 @@ const  base_url = 'http://plus.4hoste.com/api/';
 import CONST from '../consts';
 import styles from '../../assets/style'
 import * as Animatable from "react-native-animatable";
+import Modal from "react-native-modal";
 
 class Register extends Component {
 
@@ -76,9 +76,83 @@ class Register extends Component {
              passwordStatus: 0,
              ePasswordStatus: 0,
 
+             nameCountry: I18n.t('choose_country'),
+             modelCountry: false,
+
+             nameCity: I18n.t('myCity'),
+             modelCity: false,
 
          };
      }
+
+    toggleModal (type) {
+
+        if (type === 'country'){
+            this.setState({
+                modelCountry           : !this.state.modelCountry,
+            });
+        }
+
+        if (type === 'city'){
+            if (this.state.country_id === null){
+                CONST.showToast(  I18n.t('encoutry'),   "danger")
+            } else {
+                this.setState({
+                    modelCity               : !this.state.modelCity,
+                });
+            }
+        }
+
+    }
+
+    selectId (type, id, name) {
+
+        if (type === 'country'){
+            this.setState({
+                modelCountry            : !this.state.modelCountry,
+                nameCountry             : name,
+                country_id              : id,
+                nameCity                : I18n.t('myCity'),
+                city_id                 : null,
+                cities                  : [],
+                codes                   : [],
+            });
+
+            this.setState({spinner: true});
+
+            axios.post(`${CONST.url}cities`, {
+                lang: this.props.lang ,
+                country_id: id
+            }).then( (response)=> {
+                    this.setState({cities: response.data.data});
+                    axios.post(`${CONST.url}choose_codes`, {
+                        lang: this.props.lang ,
+                        country_id: this.state.country_id
+                    }).then( (response)=> {
+                            this.setState({key:response.data.data})
+                        }).catch( (error)=> {
+                            this.setState({spinner: false});
+                        }).then(()=>{
+                        this.setState({spinner: false});
+                    }).then(()=>{
+                        this.setState({spinner: false});
+                    });
+
+                }).catch( (error)=> {
+                this.setState({spinner: false});
+            })
+
+        }
+
+        if (type === 'city'){
+            this.setState({
+                modelCity            : !this.state.modelCity,
+                nameCity             : name,
+                city_id              : id
+            });
+        }
+
+    }
 
     componentWillMount() {
 
@@ -191,40 +265,6 @@ class Register extends Component {
     }
   };
 
-    onValueChange(value) {
-        this.setState({ country_id: value});
-        setTimeout(()=>{
-
-          this.setState({spinner: true});
-          axios.post(`${CONST.url}cities`, { lang: this.props.lang , country_id: this.state.country_id })
-              .then( (response)=> {
-                  this.setState({cities: response.data.data});
-                  this.setState({city_id: response.data.data[0].id});
-                  axios.post(`${CONST.url}choose_codes`, { lang: this.props.lang , country_id: this.state.country_id })
-                      .then( (response)=> {
-                          this.setState({key:response.data.data})
-                      })
-                      .catch( (error)=> {
-                          this.setState({spinner: false});
-                      }).then(()=>{
-                      this.setState({spinner: false});
-                  }).then(()=>{
-                      this.setState({spinner: false});
-                  });
-
-              }).catch( (error)=> {
-                  this.setState({spinner: false});
-              })
-
-      },1500);
-    }
-
-    onValueChangeCity(value) {
-        this.setState({
-          city_id: value
-        });
-    }
-
     validate = () => {
         let isError = false;
         let msg = '';
@@ -264,6 +304,10 @@ class Register extends Component {
     };
 
     sendData() {
+
+            console.log('key --------', this.state.key);
+            console.log('country_id ---------', this.state.country_id);
+            console.log('city_id ---------', this.state.city_id);
 
         const err = this.validate();
         if (!err)
@@ -420,58 +464,105 @@ class Register extends Component {
                                 onFocus={() => this.activeInput('phone')}
                             />
                         </View>
-                        {/*<View style={[ styles.marginVertical_10 ]}>*/}
-                        {/*    /!*<Icon style={styles.icon_input} active type="Entypo" name='mail' />*!/*/}
-                        {/*    /!*<Label style={styles.label}>{ I18n.translate('email')}</Label>*!/*/}
-                        {/*    <Input*/}
-                        {/*        placeholder={ I18n.translate('email')}*/}
-                        {/*        style={[styles.input, (this.state.emailStatus === 1 ? styles.borderRed : styles.borderGray),{ paddingRight : 10, paddingLeft : 10, color : "#363636" }]}*/}
-                        {/*        onChangeText={(email) => this.setState({email})}*/}
-                        {/*        value={ this.state.email }*/}
-                        {/*        onBlur={() => this.unActiveInput('email')}*/}
-                        {/*        onFocus={() => this.activeInput('email')}*/}
-                        {/*    />*/}
-                        {/*</View>*/}
-                        <Item style={[ styles.Border , this.state.country_id ? styles.borderRed : styles.borderGray , styles.position_R , styles.padding_0, styles.Width_100 ,{ marginBottom : 10, marginTop : 10, right : 2, marginRight : 0, } ]} regular>
-                            <Icon style={[ styles.iconPicker ]} name='down' type="AntDesign"/>
-                            <Picker
-                                iosHeader={I18n.translate('choose_country')}
-                                headerBackButtonText={I18n.translate('goBack')}
-                                mode="dropdown"
-                                placeholder={I18n.translate('choose_country')}
-                                placeholderStyle={{ color: "#363636", writingDirection: 'rtl', width : '100%',fontFamily : 'CairoRegular' }}
-                                placeholderIconColor="#444"
-                                style={{backgroundColor:'transparent',color: '#363636', width : '100%', writingDirection: 'rtl',fontFamily : 'CairoRegular'}}
-                                selectedValue={this.state.country_id}
-                                itemTextStyle={{ color: '#363636', width : '100%', writingDirection: 'rtl',fontFamily : 'CairoRegular' }}
-                                textStyle={{ color: "#363636" , width : '100%', writingDirection: 'rtl',fontFamily : 'CairoRegular',paddingLeft : 10, paddingRight: 10 }}
-                                onValueChange={this.onValueChange.bind(this)}
-                            >
-                                {
-                                    this.state.countries.map((city, i) => {
-                                        return <Picker.Item style={{color: "#363636", width : '100%',fontFamily : 'CairoRegular'}}  key={i} value={city.id} label={city.name} />
-                                    })
-                                }
-                            </Picker>
-                        </Item>
-                        <Item style={[ styles.Border , this.state.city_id ? styles.borderRed : styles.borderGray , styles.position_R , styles.padding_0, styles.Width_100 ,{ marginBottom : 10, marginTop : 10, right : 2, marginRight : 0, } ]} regular>
-                            <Icon style={[ styles.iconPicker ]} name='down' type="AntDesign"/>
-                            <Picker
-                                mode="dropdown"
-                                iosHeader={I18n.translate('myCity')}
-                                headerBackButtonText={I18n.translate('goBack')}
-                                style={{width: '100%',backgroundColor:'transparent',color: '#363636', writingDirection: 'rtl',fontFamily : 'CairoRegular'}}
-                                placeholderStyle={{ color: "#363636", writingDirection: 'rtl', width : '100%',fontFamily : 'CairoRegular' }}
-                                selectedValue={this.state.city_id}
-                                onValueChange={this.onValueChangeCity.bind(this)}
-                                textStyle={{ color: "#363636" , width : '100%', writingDirection: 'rtl',fontFamily : 'CairoRegular',paddingLeft : 10, paddingRight: 10 }}
-                                placeholder={I18n.translate('myCity')}
-                                itemTextStyle={{ color: '#363636', width : '100%', writingDirection: 'rtl',fontFamily : 'CairoRegular' }}>
-                                {this.state.cities.map((city, i) => {
-                                    return <Picker.Item   style={{color: "#363636" , width : '100%',fontFamily : 'CairoRegular'}}  key={i} value={city.id} label={city.name} />
-                                })}
-                            </Picker>
-                        </Item>
+
+                        <TouchableOpacity onPress={() => this.toggleModal('country')} style={[ styles.Width_100 , styles.paddingHorizontal_10 , styles.rowGroup, styles.Border, this.state.country_id !== null ? styles.borderRed : styles.borderGray, { paddingVertical : 14.5, marginVertical : 10 }]}>
+                            <Text style={[styles.textRegular, styles.textSize_11, styles.text_black]}>
+                                { this.state.nameCountry }
+                            </Text>
+                            <Icon style={[styles.textSize_14, styles.text_gray]} type="AntDesign" name='down' />
+                        </TouchableOpacity>
+
+                        <Modal isVisible={this.state.modelCountry} onBackdropPress={() => this.toggleModal('country')} style={[styles.bottomCenter, styles.Width_100]}>
+                            <View style={[styles.overHidden, styles.bg_White, styles.Width_100, styles.position_R, styles.top_20, { borderTopLeftRadius: 30, borderTopRightRadius: 30 }]}>
+
+                                <View style={[styles.paddingHorizontal_10, styles.marginVertical_10]}>
+                                    <ScrollView style={{ height: 300, width: '100%' }}>
+                                        <View>
+                                            {
+                                                this.state.countries.map((country, index) => {
+                                                        return (
+                                                            <TouchableOpacity
+                                                                key={index.toString()}
+                                                                style={[styles.rowGroup, styles.marginVertical_10]}
+                                                                onPress={() => this.selectId('country', country.id, country.name)}
+                                                            >
+                                                                <View style={[styles.overHidden, styles.rowRight]}>
+                                                                    <CheckBox
+                                                                        style={[styles.checkBox, styles.bg_black, styles.borderBlack]}
+                                                                        color={styles.text_White}
+                                                                        selectedColor={styles.text_White}
+                                                                        checked={this.state.country_id === country.id}
+                                                                    />
+                                                                    <Text style={[styles.textRegular, styles.text_black, styles.textSize_16, styles.paddingHorizontal_20]}>
+                                                                        {country.name}
+                                                                    </Text>
+                                                                </View>
+                                                            </TouchableOpacity>
+                                                        )
+                                                    }
+                                                )
+                                            }
+                                        </View>
+                                    </ScrollView>
+                                </View>
+
+                            </View>
+                        </Modal>
+
+                        <TouchableOpacity onPress={() => this.toggleModal('city')} style={[ styles.Width_100 , styles.paddingHorizontal_10 , styles.rowGroup, styles.Border, this.state.city_id !== null ? styles.borderRed : styles.borderGray, { paddingVertical : 14.5, marginVertical : 10 }]}>
+                            <Text style={[styles.textRegular, styles.textSize_11, styles.text_black]}>
+                                { this.state.nameCity }
+                            </Text>
+                            <Icon style={[styles.textSize_14, styles.text_gray]} type="AntDesign" name='down' />
+                        </TouchableOpacity>
+
+                        <Modal isVisible={this.state.modelCity} onBackdropPress={() => this.toggleModal('city')} style={[styles.bottomCenter, styles.Width_100]}>
+                            <View style={[styles.overHidden, styles.bg_White, styles.Width_100, styles.position_R, styles.top_20, { borderTopLeftRadius: 30, borderTopRightRadius: 30 }]}>
+
+                                <View style={[styles.paddingHorizontal_10, styles.marginVertical_10]}>
+
+                                    {
+                                        this.state.cities.length != 0 ?
+                                            <ScrollView style={{ height: 300, width: '100%' }}>
+                                                <View>
+                                                    {
+                                                        this.state.cities.map((city, index) => {
+                                                                return (
+                                                                    <TouchableOpacity
+                                                                        key={index.toString()}
+                                                                        style={[styles.rowGroup, styles.marginVertical_10]}
+                                                                        onPress={() => this.selectId('city', city.id, city.name)}
+                                                                    >
+                                                                        <View style={[styles.overHidden, styles.rowRight]}>
+                                                                            <CheckBox
+                                                                                style={[styles.checkBox, styles.bg_black, styles.borderBlack]}
+                                                                                color={styles.text_White}
+                                                                                selectedColor={styles.text_White}
+                                                                                checked={this.state.country_id === city.id}
+                                                                            />
+                                                                            <Text style={[styles.textRegular, styles.text_black, styles.textSize_16, styles.paddingHorizontal_20]}>
+                                                                                {city.name}
+                                                                            </Text>
+                                                                        </View>
+                                                                    </TouchableOpacity>
+                                                                )
+                                                            }
+                                                        )
+                                                    }
+                                                </View>
+                                            </ScrollView>
+                                            :
+                                            <View style={[ {height: 300}, styles.flexCenter]}>
+                                                <Text style={[styles.textRegular, styles.textSize_18, styles.text_red]}>
+                                                    { I18n.t('ff') }
+                                                </Text>
+                                            </View>
+                                    }
+
+                                </View>
+
+                            </View>
+                        </Modal>
 
                         <View style={[ styles.marginVertical_10 ]}>
                             {/*<Icon style={styles.icon_input} active type="Entypo" name='mail' />*/}

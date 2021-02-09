@@ -9,7 +9,7 @@ import {
     Image,
     ImageStore,
     Dimensions,
-    KeyboardAvoidingView, ActivityIndicator
+    KeyboardAvoidingView, ActivityIndicator, Picker
 } from 'react-native';
 import {
     Container,
@@ -21,7 +21,6 @@ import {
     Text,
     View,
     Item,
-    Picker,
 
     Toast, Body, Right, Header
 }

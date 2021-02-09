@@ -147,6 +147,7 @@ const en = {
     'contactUs': 'CONTACT US',
     'choose_country': 'country',
     'encountry': 'enter country',
+    'encoutry': 'choose country first',
     'chooseCity': 'My city',
     'message': 'message',
     'ads_condition': 'Terms and conditions',
@@ -271,7 +272,8 @@ const en = {
     'donUp': 'ad has been uploaded successfully',
     'sw_location': 'change the location on the map',
     'dsss': 'register again ... to confirm your details',
-    'vdieo': 'advertising video'
+    'vdieo': 'advertising video',
+    'ff': 'there are no cities currently'
 }
 
 export default en;

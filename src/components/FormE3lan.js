@@ -1,10 +1,5 @@
 import React  from 'react';
-import {
-    ScrollView,
-    TouchableOpacity,
-    Image,
-    KeyboardAvoidingView, ActivityIndicator
-} from 'react-native';
+import {ScrollView, TouchableOpacity, Image, ActivityIndicator} from 'react-native';
 import {
     Container,
     Icon,
@@ -15,41 +10,38 @@ import {
     Title,
     Text,
     View,
-    Item,
-    Picker,
     Input,
     Textarea,
     CheckBox,
-    ListItem,
-    Toast, Right, Header
-}
-    from 'native-base';
-import * as FileSystem from 'expo-file-system';
-import * as ImagePicker from 'expo-image-picker';
+    ListItem, Right, Header
+} from 'native-base';
 import MapView from 'react-native-maps'
 import axios        from "axios";
 import {connect}   from "react-redux";
-// import Spinner     from "react-native-loading-spinner-overlay";
 import * as Location from 'expo-location'
-import * as Permissions from 'expo-permissions'
 import I18n from "ex-react-native-i18n";
-import {CameraBrowser} from 'expo-multiple-imagepicker';
-import { ImageBrowser } from 'expo-multiple-media-imagepicker';
 let    base_64   = [];
 import CONST from '../consts';
 import styles from '../../assets/style'
 import {NavigationEvents} from "react-navigation";
 import Modal from "react-native-modal";
+
+import * as Permissions from 'expo-permissions';
+import * as   ImagePicker from 'expo-image-picker';
+
 let BUTTONS = [
     { text: I18n.translate('gallery_photo') ,i : 0 },
     { text: I18n.translate('camera_photo'),i : 1},
     { text: I18n.translate('gallery_video') ,i : 2},
     { text: I18n.translate('cancel'),   color: "#ff5b49" }
 ];
+
 let    DESTRUCTIVE_INDEX = 3;
 let    CANCEL_INDEX = 3;
 let    Base64_   = [];
 let    data = new FormData();
+data.append('id', 2064);
+
 
 class AddE3lan extends React.Component {
 
@@ -122,16 +114,23 @@ class AddE3lan extends React.Component {
             priceStatus      : 0,
             descriptionStatus         : 0,
             mobileStatus      : 0,
-            spinner : true
+            spinner : true,
+
+            nameCountry: I18n.t('choose_country'),
+            modelCountry: false,
+
+            nameCity: I18n.t('choose_city'),
+            modelCity: false,
+
+            nameCar: I18n.t('choose_model'),
+            modelCar: false,
+
+            nameCode: I18n.t('keyCountry'),
+            modelCode: false,
+
         };
 
         this.setState({lang: this.props.lang});
-        axios.post(`${CONST.url}sections`, {
-            lang            :  this.props.lang ,
-            sub_category_id :  this.props.navigation.state.params.sub_category_id
-        }).then((response)=> {
-            this.setState({sections: response.data.data});
-        });
 
         axios.post(`${CONST.url}categoriesList`, {
             lang: this.props.lang ,
@@ -165,6 +164,91 @@ class AddE3lan extends React.Component {
             .catch((error) => {
                 this.setState({spinner: false});
             })
+    }
+
+    toggleModal (type) {
+
+        if (type === 'country'){
+            this.setState({
+                modelCountry           : !this.state.modelCountry,
+            });
+        }
+
+        if (type === 'city'){
+            if (this.state.country_id === null){
+                CONST.showToast(  I18n.t('encoutry'),   "danger")
+            } else {
+                this.setState({
+                    modelCity               : !this.state.modelCity,
+                });
+            }
+        }
+
+        if (type === 'car'){
+            this.setState({
+                modelCar           : !this.state.modelCar,
+            });
+        }
+
+        if (type === 'code'){
+            this.setState({
+                modelCode    : !this.state.modelCode
+            });
+        }
+
+    }
+
+    selectId (type, id, name) {
+
+        if (type === 'country'){
+            this.setState({
+                modelCountry            : !this.state.modelCountry,
+                nameCountry             : name,
+                country_id              : id,
+                nameCity                : I18n.t('myCity'),
+                city_id                 : null,
+                cities                  : [],
+            });
+
+            this.setState({spinner: true});
+
+            axios.post(`${CONST.url}cities`, {
+                lang: this.props.lang,
+                country_id:  id
+            }).then((response) => {
+                    this.setState({cities: response.data.data});
+                }).catch((error) => {
+                    this.setState({spinner: false});
+                }).then(() => {
+                this.setState({spinner: false});
+            });
+
+        }
+
+        if (type === 'city'){
+            this.setState({
+                modelCity            : !this.state.modelCity,
+                nameCity             : name,
+                city_id              : id
+            });
+        }
+
+        if (type === 'car'){
+            this.setState({
+                modelCar             : !this.state.modelCar,
+                nameCar              : id,
+                year                 : id,
+            });
+        }
+
+        if (type === 'code'){
+            this.setState({
+                modelCode       : !this.state.modelCode,
+                nameCode         : id,
+                key             : id
+            });
+        }
+
     }
 
     activeInput(type) {
@@ -206,7 +290,6 @@ class AddE3lan extends React.Component {
         }
 
     }
-
 
     async componentWillMount() {
         for(let i = 2020; i > 1990 ; i--){
@@ -260,53 +343,105 @@ class AddE3lan extends React.Component {
 
     }
 
-    componentDidMount() {
-        this.getPermissionAsync();
-    }
-
-    getPermissionAsync = async () => {
-        await Camera.requestPermissionsAsync();
-        await Permissions.askAsync(Permissions.CAMERA);
-        const { status } = await Permissions.askAsync(Permissions.CAMERA_ROLL);
-        if (status !== 'granted') {
-            alert('Sorry, we need camera roll permissions to make this work!');
-        }
-
-    };
-
-
-    onValueChange_key(key) {
-        this.setState({key});
-    }
-
-    onValueChange(value) {
-        this.setState({country_id: value});
-        this.setState({spinner: true});
-        axios.post(`${CONST.url}cities`, {lang: this.props.lang, country_id:  value})
-            .then((response) => {
-                this.setState({cities: response.data.data});
-            })
-
-            .catch((error) => {
-                this.setState({spinner: false});
-            }).then(() => {
-            this.setState({spinner: false});
-        });
+    async componentDidMount() {
+        setTimeout(async () => {
+            const { status } = await ImagePicker.requestCameraRollPermissionsAsync();
+            await Permissions.askAsync(Permissions.CAMERA);
+            let { statusPr } = await Permissions.askAsync(Permissions.LOCATION);
+            let location = await Location.getCurrentPositionAsync({});
+            this.setState({
+                initMap     : false,
+                mapRegion   : location.coords
+            });
+            console.log('location ---------------', location)
+        }, 1000);
     }
 
     open() {
         ActionSheet.show(
             {
-                options: BUTTONS,
-                cancelButtonIndex: CANCEL_INDEX,
-                destructiveButtonIndex: DESTRUCTIVE_INDEX,
-                title: I18n.translate('image_video')
+                options                   : BUTTONS,
+                cancelButtonIndex         : CANCEL_INDEX,
+                destructiveButtonIndex    : DESTRUCTIVE_INDEX,
+                title                     : 'آختر طريقه العرض'
             },
             buttonIndex => {
                 this.images_video(BUTTONS[buttonIndex])
             }
         )
     }
+
+    images_video = async (i) => {
+
+        if (i.i === 0) {
+            let result = await ImagePicker.launchImageLibraryAsync({
+                mediaTypes: ImagePicker.MediaTypeOptions.All,
+                aspect: [4, 3],
+                quality : .5,
+             });
+
+            let localUri = result.uri;
+            let filename = localUri.split('/').pop();
+
+            let type = 'image/jpeg';
+            data.append('images[]', {
+                uri: localUri,
+                name: filename, type
+            });
+
+            if (!result.cancelled) {
+                this.setState({
+                    imageBrowserOpen: false,
+                    cameraBrowserOpen: false,
+                    photos: this.state.photos.concat(result.uri)
+                });
+            }
+        } else if (i.i === 1) {
+
+            let result = await ImagePicker.launchCameraAsync({
+                mediaTypes: ImagePicker.MediaTypeOptions.All,
+                aspect      : [4, 3],
+                quality     : .5,
+                // base64      : true
+            });
+
+            if (result){
+
+                let localUri = result.uri;
+                let filename = localUri.split('/').pop();
+
+                let type = 'image/jpeg';
+                data.append('images[]', {
+                    uri: localUri,
+                    name: filename, type
+                });
+
+                this.setState({
+                    photos: this.state.photos.concat(result.uri)
+                });
+            }
+
+        } else if (i.i === 2) {
+
+            let result = await ImagePicker.launchImageLibraryAsync({
+                allowsEditing: true,
+                aspect: [4, 3],
+                mediaTypes: 'Videos',
+                quality : .5,
+            });
+            if (!result.cancelled) {
+                this.setState({video: result.uri ,video_base64:result.base64, image: result.uri});
+            }
+            let localUri = result.uri;
+            let filename = localUri.split('/').pop();
+
+            let match = /\.(\w+)$/.exec(filename);
+            let type = match ? `video/${match[1]}` : video;
+            this.state.formData.append('media', {
+                uri: localUri, name: filename, type
+            });
+        }
+    };
 
     onFocus() {
         base_64 = [];
@@ -319,62 +454,12 @@ class AddE3lan extends React.Component {
         Base64_ = [];
     }
 
-    images_video = async (i) => {
-
-        if (i.i === 0) {
-            this.setState({imageBrowserOpen: true});
-
-        } else if (i.i === 1) {
-
-            let result = await ImagePicker.launchCameraAsync({
-                mediaTypes: ImagePicker.MediaTypeOptions.All,
-                aspect: [4, 3],
-                quality : .5,
-
-            });
-            if (!result.cancelled) {
-                this.setState({
-                    Base64: this.state.Base64.concat(result.uri)
-                });
-                Base64_.push(result.base64);
-                data.append("images[]",{
-                    uri : result.uri,
-                    type : 'image/jpeg',
-                    name : result.filename || `temp_image_${result.height}.jpg`
-                });
-
-            }
-
-        } else if (i.i === 2) {
-
-            let result = await ImagePicker.launchImageLibraryAsync({
-                allowsEditing: true,
-                aspect: [4, 3],
-                mediaTypes: 'Videos',
-                quality : .5,
-            });
-
-            if (!result.cancelled) {
-                this.setState({video: result.uri ,video_base64:result.base64, image: result.uri});
-            }
-
-            let localUri = result.uri;
-            let filename = localUri.split('/').pop();
-
-            let match = /\.(\w+)$/.exec(filename);
-            let type = match ? `video/${match[1]}` : video;
-            this.state.formData.append('media', {
-                uri: localUri, name: filename, type
-            });
-        }
-    };
-
     validate = () => {
 
         let isError = false;
         let msg = '';
 
-        if (base_64.concat(Base64_).length === 0) {
+        if (this.state.photos.length === 0) {
             isError = true;
             msg = I18n.t('image_vid');
         } else if (this.state.country_id === null || this.state.country_id === '') {
@@ -409,13 +494,6 @@ class AddE3lan extends React.Component {
         return isError;
     };
 
-    delete_img_s(i) {
-        this.state.Base64.splice(i, 1);
-        Base64_.splice(i, 1);
-        base_64.splice(i, 1);
-        this.setState({photos: this.state.Base64})
-    }
-
     delete_img(i) {
         this.state.photos.splice(i, 1);
         base_64.splice(i, 1);
@@ -448,7 +526,7 @@ class AddE3lan extends React.Component {
                     section_id     : this.state.section_id,
                     is_chat        : this.state.is_chat,
                     model          : this.state.year,
-                    // images         : base_64.concat(Base64_)
+                    // images         : this.state.photos
                 }
             ).then((response) => {
                     if (response.data.value === '1') {
@@ -475,20 +553,10 @@ class AddE3lan extends React.Component {
                         })
                     } else {
                         CONST.showToast(response.data.msg,  "danger")
-                        //
-                        // Toast.show({
-                        //     text: response.data.msg,
-                        //     duration: 2000,
-                        //     type: "danger",
-                        //     textStyle: {color: "white", fontFamily: 'CairoRegular', textAlign: 'center'}
-                        // });
                     }
-                }).catch((error) => {})
-                .then(() => {});
+                }).catch((error) => {}).then(() => {});
         }
     }
-
-    onValueYear(value) {this.setState({year: value});}
 
     renderSubmit() {
         if (this.state.isLoaded) {
@@ -505,13 +573,8 @@ class AddE3lan extends React.Component {
         );
     }
 
-    onValueChangeCity(value) {
-        this.setState({
-            city_id: value
-        });
-    }
-
     upload(){
+
         fetch(`${CONST.url}upload_images`,{
             method : 'post',
             body:data
@@ -527,31 +590,6 @@ class AddE3lan extends React.Component {
             })
     }
 
-    imageBrowserCallback = (callback) => {
-
-        callback.then((photos) => {
-                photos.map((item,index) => {
-                    data.append("images[]",{
-                        uri : item.localUri,
-                        type : 'image/jpeg',
-                        name : item.filename || `temp_image_${index}.jpg`
-                    });
-                });
-
-                this.setState({
-                    imageBrowserOpen: false,
-                    cameraBrowserOpen: false,
-                    photos: this.state.photos.concat(photos)
-                });
-                const imgs = this.state.photos;
-                for (let i = 0; i < imgs.length; i++) {
-                    const imageURL = imgs[i].localUri;
-                    FileSystem.readAsStringAsync(imageURL, { encoding: 'base64' }).then(imgBase64 => Base64_.push(imgBase64))
-                }
-            }
-        ).catch((e) => console.log(e))
-    };
-
     delete_video(i) {
         this.setState({image: null, video: ''})
     }
@@ -561,7 +599,7 @@ class AddE3lan extends React.Component {
             <View key={i} style={{height: 70, width: 70, margin: 10, overflow : 'hidden', borderRadius : 5 }}>
                 <Image
                     style={{height: '100%', width: '100%' }}
-                    source={{uri: item.localUri}}
+                    source={{uri: item}}
                     key={i}
                 />
                 <TouchableOpacity onPress={() => {
@@ -576,23 +614,11 @@ class AddE3lan extends React.Component {
                     alignItems     : 'center',
                     justifyContent : 'center'
                 }}>
-                    <Icon name="close" style={{color: 'white', textAlign: 'center', fontSize: 22}}></Icon>
+                    <Icon name="close" style={{color: 'white', textAlign: 'center', fontSize: 22}}/>
                 </TouchableOpacity>
             </View>
         )
     }
-
-    componentDidMount() {
-        this.getPermissionAsync();
-    }
-
-    getPermissionAsync = async () => {
-        await Permissions.askAsync(Permissions.CAMERA);
-        const {status} = await Permissions.askAsync(Permissions.CAMERA_ROLL);
-        if (status !== 'granted') {
-            alert('Sorry, we need camera roll permissions to make this work!');
-        }
-    };
 
     async toggleModalMap (){
 
@@ -637,11 +663,6 @@ class AddE3lan extends React.Component {
 
     render() {
 
-        if (this.state.imageBrowserOpen) {
-            return(<ImageBrowser base64={true} max={7} callback={this.imageBrowserCallback}/>);
-        }else if (this.state.cameraBrowserOpen) {
-            return(<CameraBrowser base64={true} max={7} callback={this.imageBrowserCallback}/>);
-        }
         return (
             <Container style={{ backgroundColor : '#e5e5e5' }}>
                 <NavigationEvents onWillFocus={() => this.onFocus()} />
@@ -661,7 +682,7 @@ class AddE3lan extends React.Component {
                 <Content>
                     <View style={styles.upload}>
                         {/*<Text style={styles.textes}>{I18n.translate('add_photo')}</Text>*/}
-                        <View >
+                        <View>
                             <TouchableOpacity onPress={()=> this.open()}>
                                 <View style={styles.blockUpload}>
                                     <Icon style={styles.iconUpload} active type="AntDesign" name='pluscircleo' />
@@ -676,35 +697,6 @@ class AddE3lan extends React.Component {
                         </View>
                     </View>
                     <ScrollView showsHorizontalScrollIndicator={false} horizontal={true} style={{marginHorizontal: 20}}>
-                        {
-                            this.state.Base64.map((item,i) => {
-                                return(
-                                    <View key={i} style={{height: 70, width: 70, margin: 10, overflow : 'hidden', borderRadius : 5 }}>
-
-                                        <Image
-                                            style={{height: '100%', width: '100%' }}
-                                            source={{uri: item}}
-                                            key={i}
-                                        />
-                                        <TouchableOpacity onPress={() => {
-                                            this.delete_img_s(i)
-                                        }} style={{
-                                            position        : 'absolute',
-                                            right           : 0,
-                                            top             : 0,
-                                            backgroundColor : 'rgba(0,0,0,0.5)',
-                                            width           : '100%',
-                                            height          : '100%',
-                                            alignItems      : 'center',
-                                            justifyContent  : 'center'
-                                        }}>
-
-                                            <Icon name="close" style={{color: 'white', textAlign: 'center', fontSize: 22}}/>
-                                        </TouchableOpacity>
-                                    </View>
-                                )
-                            })
-                        }
                         {
                             this.state.photos.map((item,i) => this.renderImage(item,i))
                         }
@@ -737,95 +729,165 @@ class AddE3lan extends React.Component {
                     </ScrollView>
 
                     <View style={[ styles.rowGroup, styles.paddingHorizontal_5, styles.marginVertical_10 ]}>
-                        <View style={[ styles.flex_50, styles.paddingHorizontal_10 ]}>
-                            <View style={[ styles.itemPiker_second, { borderWidth : 0.5, borderColor : '#b5b5b5' } ]} regular>
-                                <Picker
-                                    iosHeader={I18n.translate('choose_country')}
-                                    headerBackButtonText={I18n.translate('goBack')}
-                                    mode="dropdown"
-                                    style={styles.Picker}
-                                    selectedValue={this.state.country_id}
-                                    onValueChange={this.onValueChange.bind(this)}
-                                    placeholderStyle={{ color: "#444", writingDirection: 'rtl', width : '100%',fontFamily : 'CairoRegular', fontSize : 14 }}
-                                    textStyle={{ color: "#444",fontFamily : 'CairoRegular', writingDirection: 'rtl',paddingLeft : 5, paddingRight: 5 }}
-                                    placeholder={I18n.translate('choose_country')}
-                                    itemTextStyle={{ color: '#444',fontFamily : 'CairoRegular', writingDirection: 'rtl' }}>
-
-                                    <Picker.Item style={styles.itemPicker} label={I18n.translate('choose_country')} value={null} />
-
-                                    {
-                                        this.state.countries.map((country, i) => (
-                                            <Picker.Item style={styles.itemPicker} label={country.name} value={country.id} />
-                                        ))
-                                    }
-
-                                </Picker>
-                                <Icon style={[ styles.iconPicker ,{ top : 15 } ]} type="AntDesign" name='down' />
-                            </View>
+                        <View style={[ styles.flex_50, styles.paddingHorizontal_5 ]}>
+                            <TouchableOpacity onPress={() => this.toggleModal('country')} style={[ styles.Width_100 , styles.paddingHorizontal_10 , styles.rowGroup, styles.bg_White, { paddingVertical : 12 }]}>
+                                <Text style={[styles.textRegular, styles.textSize_11, styles.text_black]}>
+                                    { this.state.nameCountry }
+                                </Text>
+                                <Icon style={[styles.textSize_14, styles.text_gray]} type="AntDesign" name='down' />
+                            </TouchableOpacity>
                         </View>
-                        <View style={[ styles.flex_50, styles.paddingHorizontal_5, { position : 'relative', right : 4 } ]}>
-                            <View style={[ styles.itemPiker_second, { borderWidth : 0.5, borderColor : '#b5b5b5' } ]} regular>
-                                <Picker
-                                    iosHeader={I18n.translate('myCity')}
-                                    headerBackButtonText={I18n.translate('goBack')}
-                                    mode="dropdown"
-                                    style={styles.Picker}
-                                    selectedValue={this.state.city_id}
-                                    onValueChange={this.onValueChangeCity.bind(this)}
-                                    placeholderStyle={{ color: "#444", writingDirection: 'rtl', width : '100%',fontFamily : 'CairoRegular', fontSize : 14 }}
-                                    textStyle={{ color: "#444",fontFamily : 'CairoRegular', writingDirection: 'rtl',paddingLeft : 5, paddingRight: 5 }}
-                                    placeholder={I18n.translate('myCity')}
-                                    itemTextStyle={{ color: '#444',fontFamily : 'CairoRegular', writingDirection: 'rtl' }}>
-
-                                    <Picker.Item style={styles.itemPicker} label={I18n.translate('all_cities')} value={null} />
-
-                                    {
-                                        this.state.cities.map((city, i) => (
-                                            <Picker.Item style={styles.itemPicker} key={i} label={city.name} value={city.id} />
-                                        ))
-                                    }
-
-                                </Picker>
-                                <Icon style={[ styles.iconPicker ,{ top : 15 } ]} type="AntDesign" name='down' />
-                            </View>
+                        <View style={[ styles.flex_50, styles.paddingHorizontal_5 ]}>
+                            <TouchableOpacity onPress={() => this.toggleModal('city')} style={[ styles.Width_100 , styles.paddingHorizontal_10 , styles.rowGroup, styles.bg_White,{ paddingVertical : 12 }]}>
+                                <Text style={[styles.textRegular, styles.textSize_11, styles.text_black]}>
+                                    { this.state.nameCity }
+                                </Text>
+                                <Icon style={[styles.textSize_14, styles.text_gray]} type="AntDesign" name='down' />
+                            </TouchableOpacity>
                         </View>
                     </View>
 
-                    {
-                        (this.props.navigation.state.params.nameCar === 'car') ?
-                            <View style={[ styles.rowGroup, styles.paddingHorizontal_5, { marginTop : 20, marginBottom : 10 } ]}>
-                                <View style={[ styles.flex_100, styles.paddingHorizontal_10 ]}>
-                                    <View style={styles.itemPiker_second} regular>
-                                        <Picker
-                                            mode                    = "dropdown"
-                                            style                   = {styles.Picker}
-                                            selectedValue           = {this.state.year}
-                                            onValueChange           = {this.onValueYear.bind(this)}
-                                            placeholderStyle={{ color: "#444", writingDirection: 'rtl', width : '100%',fontFamily : 'CairoRegular', fontSize : 14 }}
-                                            textStyle={{ color: "#444",fontFamily : 'CairoRegular', writingDirection: 'rtl',paddingLeft : 5, paddingRight: 5 }}
-                                            placeholder={I18n.translate('myCity')}
-                                            itemTextStyle={{ color: '#444',fontFamily : 'CairoRegular', writingDirection: 'rtl' }}
-                                        >
-                                            <Picker.Item style={[styles.itemPicker]} label={I18n.translate('choose_model')} value={null} />
+                    <Modal isVisible={this.state.modelCountry} onBackdropPress={() => this.toggleModal('country')} style={[styles.bottomCenter, styles.Width_100]}>
+                        <View style={[styles.overHidden, styles.bg_White, styles.Width_100, styles.position_R, styles.top_20, { borderTopLeftRadius: 30, borderTopRightRadius: 30 }]}>
 
-                                            {
-                                                this.state.years.map((year, i) => (
-                                                    <Picker.Item style={[styles.itemPicker]} key={i} label={year} value={year} />
-                                                ))
-                                            }
-
-                                        </Picker>
-                                        <Icon style={[ styles.iconPicker ,{ top : 15 } ]} type="AntDesign" name='down' />
+                            <View style={[styles.paddingHorizontal_10, styles.marginVertical_10]}>
+                                <ScrollView style={{ height: 300, width: '100%' }}>
+                                    <View>
+                                        {
+                                            this.state.countries.map((country, index) => {
+                                                    return (
+                                                        <TouchableOpacity
+                                                            key={index.toString()}
+                                                            style={[styles.rowGroup, styles.marginVertical_10]}
+                                                            onPress={() => this.selectId('country', country.id, country.name)}
+                                                        >
+                                                            <View style={[styles.overHidden, styles.rowRight]}>
+                                                                <CheckBox
+                                                                    style={[styles.checkBox, styles.bg_black, styles.borderBlack]}
+                                                                    color={styles.text_White}
+                                                                    selectedColor={styles.text_White}
+                                                                    checked={this.state.country_id === country.id}
+                                                                />
+                                                                <Text style={[styles.textRegular, styles.text_black, styles.textSize_16, styles.paddingHorizontal_20]}>
+                                                                    {country.name}
+                                                                </Text>
+                                                            </View>
+                                                        </TouchableOpacity>
+                                                    )
+                                                }
+                                            )
+                                        }
                                     </View>
-                                </View>
+                                </ScrollView>
                             </View>
-                            :
-                            <View/>
-                    }
+
+                        </View>
+                    </Modal>
+
+                    <Modal isVisible={this.state.modelCity} onBackdropPress={() => this.toggleModal('city')} style={[styles.bottomCenter, styles.Width_100]}>
+                        <View style={[styles.overHidden, styles.bg_White, styles.Width_100, styles.position_R, styles.top_20, { borderTopLeftRadius: 30, borderTopRightRadius: 30 }]}>
+
+                            <View style={[styles.paddingHorizontal_10, styles.marginVertical_10]}>
+
+                                {
+                                    this.state.cities.length != 0 ?
+                                        <ScrollView style={{ height: 300, width: '100%' }}>
+                                            <View>
+                                                {
+                                                    this.state.cities.map((city, index) => {
+                                                            return (
+                                                                <TouchableOpacity
+                                                                    key={index.toString()}
+                                                                    style={[styles.rowGroup, styles.marginVertical_10]}
+                                                                    onPress={() => this.selectId('city', city.id, city.name)}
+                                                                >
+                                                                    <View style={[styles.overHidden, styles.rowRight]}>
+                                                                        <CheckBox
+                                                                            style={[styles.checkBox, styles.bg_black, styles.borderBlack]}
+                                                                            color={styles.text_White}
+                                                                            selectedColor={styles.text_White}
+                                                                            checked={this.state.country_id === city.id}
+                                                                        />
+                                                                        <Text style={[styles.textRegular, styles.text_black, styles.textSize_16, styles.paddingHorizontal_20]}>
+                                                                            {city.name}
+                                                                        </Text>
+                                                                    </View>
+                                                                </TouchableOpacity>
+                                                            )
+                                                        }
+                                                    )
+                                                }
+                                            </View>
+                                        </ScrollView>
+                                        :
+                                        <View style={[ {height: 300}, styles.flexCenter]}>
+                                            <Text style={[styles.textRegular, styles.textSize_18, styles.text_red]}>
+                                                { I18n.t('ff') }
+                                            </Text>
+                                        </View>
+                                }
+
+                            </View>
+
+                        </View>
+                    </Modal>
+
+                    <View style={[ styles.paddingHorizontal_10 ]}>
+                        {
+                            (this.props.navigation.state.params.nameCar === 'car') ?
+                                <TouchableOpacity onPress={() => this.toggleModal('car')} style={[ styles.clickFunctionHome, styles.flex_100, styles.Width_100, styles.marginVertical_10, styles.paddingHorizontal_10, styles.bg_White, styles.height_50 ]}>
+                                    <Text style={[styles.textRegular, styles.textSize_11, styles.text_black]}>
+                                        { this.state.nameCar }
+                                    </Text>
+                                    <Icon style={[styles.textSize_14, styles.text_gray]} type="AntDesign" name='down' />
+                                </TouchableOpacity>
+                                :
+                                null
+                        }
+                    </View>
+
+                    <Modal isVisible={this.state.modelCar} onBackdropPress={() => this.toggleModal('car')} style={[styles.bottomCenter, styles.Width_100]}>
+                        <View style={[styles.overHidden, styles.bg_White, styles.Width_100, styles.position_R, styles.top_20, { borderTopLeftRadius: 30, borderTopRightRadius: 30 }]}>
+
+                            <View style={[styles.paddingHorizontal_10, styles.marginVertical_10]}>
+
+                                <ScrollView style={{ height: 300, width: '100%' }}>
+                                    <View>
+                                        {
+                                            this.state.years.map((year, index) => {
+                                                    return (
+                                                        <TouchableOpacity
+                                                            key={index.toString()}
+                                                            style={[styles.rowGroup, styles.marginVertical_10]}
+                                                            onPress={() => this.selectId('car', year)}
+                                                        >
+                                                            <View style={[styles.overHidden, styles.rowRight]}>
+                                                                <CheckBox
+                                                                    style={[styles.checkBox, styles.bg_black, styles.borderBlack]}
+                                                                    color={styles.text_White}
+                                                                    selectedColor={styles.text_White}
+                                                                    checked={this.state.year === year}
+                                                                />
+                                                                <Text style={[styles.textRegular, styles.text_black, styles.textSize_16, styles.paddingHorizontal_20]}>
+                                                                    {year}
+                                                                </Text>
+                                                            </View>
+                                                        </TouchableOpacity>
+                                                    )
+                                                }
+                                            )
+                                        }
+                                    </View>
+                                </ScrollView>
+
+                            </View>
+
+                        </View>
+                    </Modal>
 
                     {/*<KeyboardAvoidingView behavior="padding" style={{  flex: 1, width : '100%'}} >*/}
 
-                        <View style={[ styles.block_section , { margin : 0 , marginHorizontal : 10, padding : 0 ,paddingHorizontal : 5 } ]}>
+                    <View style={[ styles.block_section , { margin : 0 , marginHorizontal : 10, padding : 0 ,paddingHorizontal : 5 } ]}>
 
                             <View style={[ styles.item, { borderColor : (this.state.titleStatus === 1 ? '#FF0000' : '#DDD') ,borderWidth : .5 } ]} >
                                 <Input
@@ -861,7 +923,7 @@ class AddE3lan extends React.Component {
                             </View>
 
                             <View style={{flexDirection: 'row', width : '100%'}}>
-                                <View style={[ styles.flex_80 ]}>
+                                <View style={[ styles.flex_60 ]}>
                                     <View style={{
                                         padding                 : 0,
                                         width                   : '100%',
@@ -880,39 +942,61 @@ class AddE3lan extends React.Component {
                                         />
                                     </View>
                                 </View>
-                                <View style={[ styles.flex_20 ]}>
-                                    <View style={[ styles.rowGroup , styles.position_R , { alignItems : 'center', paddingHorizontal : 0, borderWidth : 0.5, borderColor : '#b5b5b5' , borderLeftWidth : 0,top : 10, height : 50}]} regular>
-                                        <Picker
-                                            mode               ="dropdown"
-                                            iosHeader = {I18n.translate('keyCountry')}
-                                            headerBackButtonText={I18n.translate('goBack')}
-                                            selectedValue       ={this.state.key}
-                                            onValueChange={this.onValueChange_key.bind(this)}
-                                            placeholderStyle={{ color: "#363636", writingDirection: 'rtl', width : '100%',fontFamily : 'CairoRegular' }}
-                                            placeholderIconColor="#444"
-                                            style={{backgroundColor:'transparent',color: '#363636', width : '100%', writingDirection: 'rtl',fontFamily : 'CairoRegular'}}
-                                            itemTextStyle={{ color: '#363636', width : '100%', writingDirection: 'rtl',fontFamily : 'CairoRegular' }}
-                                            textStyle={{ color: "#363636" , width : '100%', writingDirection: 'rtl',fontFamily : 'CairoRegular',paddingLeft : 10, paddingRight: 10 }}
-                                        >
-                                            {
-                                                this.state.codes.map((code, i) => {
-                                                    return <Picker.Item style={{color: "#363636"}}  key={i} value={code} label={code} />
-                                                })
-                                            }
-                                        </Picker>
-                                        <Icon style={[ styles.position_A, {color: "#363636", fontSize:13, right : 5, top: 19} ]} name='down' type="AntDesign"/>
-                                    </View>
+                                <View style={[ styles.flex_40 ]}>
+                                    <TouchableOpacity onPress={() => this.toggleModal('code')} style={[ styles.Width_100 , styles.paddingHorizontal_10 , styles.rowGroup, styles.Border, this.state.key !== null ? styles.borderRed : styles.borderGray, { paddingVertical : 14.5, marginTop : 10 }]}>
+                                        <Text style={[styles.textRegular, styles.textSize_11, styles.text_black]}>
+                                            { this.state.nameCode }
+                                        </Text>
+                                        <Icon style={[styles.textSize_14, styles.text_gray]} type="AntDesign" name='down' />
+                                    </TouchableOpacity>
                                 </View>
                             </View>
 
                         </View>
 
-                        <View style={[styles.rowCenter, styles.Width_100, styles.marginVertical_20, styles.bg_blue2, styles.paddingVertical_10, styles.width_200]}>
+                    <Modal isVisible={this.state.modelCode} onBackdropPress={() => this.toggleModal('code')} style={[styles.bottomCenter, styles.Width_100]}>
+                        <View style={[styles.overHidden, styles.bg_White, styles.Width_100, styles.position_R, styles.top_20, { borderTopLeftRadius: 30, borderTopRightRadius: 30 }]}>
+
+                            <View style={[styles.paddingHorizontal_10, styles.marginVertical_10]}>
+                                <ScrollView style={{ height: 300, width: '100%' }}>
+                                    <View>
+                                        {
+                                            this.state.codes.map((key, index) => {
+                                                    return (
+                                                        <TouchableOpacity
+                                                            key={index.toString()}
+                                                            style={[styles.rowGroup, styles.marginVertical_10]}
+                                                            onPress={() => this.selectId('code', key)}
+                                                        >
+                                                            <View style={[styles.overHidden, styles.rowRight]}>
+                                                                <CheckBox
+                                                                    style={[styles.checkBox, styles.bg_black, styles.borderBlack]}
+                                                                    color={styles.text_White}
+                                                                    selectedColor={styles.text_White}
+                                                                    checked={this.state.key === key}
+                                                                />
+                                                                <Text style={[styles.textRegular, styles.text_black, styles.textSize_16, styles.paddingHorizontal_20]}>
+                                                                    {key}
+                                                                </Text>
+                                                            </View>
+                                                        </TouchableOpacity>
+                                                    )
+                                                }
+                                            )
+                                        }
+                                    </View>
+                                </ScrollView>
+                            </View>
+
+                        </View>
+                    </Modal>
+
+                    <View style={[styles.rowCenter, styles.Width_100, styles.marginVertical_20, styles.bg_blue2, styles.paddingVertical_10, styles.width_200]}>
                             <Icon style={[styles.text_White, styles.textRegular, styles.textSize_14, styles.marginHorizontal_5]} type="Octicons" name='settings' />
                             <Text style={[styles.text_White, styles.textRegular, styles.textSize_14]}>{I18n.translate('configurations')}</Text>
                         </View>
 
-                        <View style={[ styles.overHidden, styles.marginVertical_10 ]}>
+                    <View style={[ styles.overHidden, styles.marginVertical_10 ]}>
 
                             <View style={[ styles.overHidden, styles.paddingHorizontal_10 ]}>
                                 <ListItem style={{ paddingRight : 0, marginLeft : 0 }}  onPress={() => this.setState({ is_phone: !this.state.is_phone })}>
@@ -979,7 +1063,7 @@ class AddE3lan extends React.Component {
                         {/*</TouchableOpacity>*/}
 
 
-                        <TouchableOpacity
+                    <TouchableOpacity
                             onPress={() => this.toggleModalMap()}
                             style={{justifyContent:"center"  , alignItems : 'center' , flexDirection : 'row' , marginVertical : 12}}
                         >
@@ -987,7 +1071,7 @@ class AddE3lan extends React.Component {
                             <Text style={[styles.text, {color: CONST.color, fontFamily : 'CairoBold', textDecorationLine: 'underline',}]}>{I18n.translate('sw_location')}</Text>
                         </TouchableOpacity>
 
-                        <Modal isVisible={this.state.mapModal} onBackdropPress={() => this.toggleModalMap()}>
+                    <Modal isVisible={this.state.mapModal} onBackdropPress={() => this.toggleModalMap()}>
                             <View style={styles.model}>
                                 <View style={[styles.commenter , {width:'100%'}]}>
 

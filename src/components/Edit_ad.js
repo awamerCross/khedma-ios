@@ -9,7 +9,7 @@ import {
     ImageStore,
     Dimensions,
     ActivityIndicator,
-    KeyboardAvoidingView, I18nManager as RNI18nManager
+    KeyboardAvoidingView, I18nManager as RNI18nManager, Picker
 } from 'react-native';
 import {
     Container,
@@ -26,7 +26,6 @@ import {
     Textarea,
     CheckBox,
     Left,
-    Picker,
     ListItem,
     Toast, Right, Header
 }
@@ -41,15 +40,14 @@ import MapView from 'react-native-maps'
 import * as Permissions from 'expo-permissions'
 import I18n from "ex-react-native-i18n";
 import {ImageBrowser,CameraBrowser} from 'expo-multiple-imagepicker';
-
 let    base64   = [];
 const  height = Dimensions.get('window').height;
 import marker from '../../assets/marker.png'
 import {NavigationEvents} from "react-navigation";
 import CONST from '../consts';
 import styles from '../../assets/style'
+import Modal from "react-native-modal";
 const  isIphoneX = Platform.OS === 'ios' && height == 812 || height == 896;
-
 
 let BUTTONS = [
     { text: I18n.translate('gallery_photo') ,i : 0 },
@@ -60,15 +58,10 @@ let BUTTONS = [
 let DESTRUCTIVE_INDEX = 3;
 let CANCEL_INDEX = 3;
 
-
 class Edit_ad extends React.Component {
-
-
     constructor(props) {
-
         super(props);
         RNI18nManager.forceRTL(true);
-
         this.state = {
             lang             : 'ar',
             phone            : 'ar',
@@ -118,7 +111,105 @@ class Edit_ad extends React.Component {
             model : null,
             years : [],
             year  : null,
+
+            nameCountry: I18n.t('choose_country'),
+            modelCountry: false,
+
+            nameCity: I18n.t('choose_city'),
+            modelCity: false,
+
+            nameCode: I18n.t('keyCountry'),
+            modelCode: false,
+
+            nameCar: I18n.t('choose_model'),
+            modelCar: false,
+
         };
+    }
+
+    toggleModal (type) {
+
+        if (type === 'country'){
+            this.setState({
+                modelCountry           : !this.state.modelCountry,
+            });
+        }
+
+        if (type === 'city'){
+            if (this.state.country_id === null){
+                CONST.showToast(  I18n.t('encoutry'),   "danger")
+            } else {
+                this.setState({
+                    modelCity               : !this.state.modelCity,
+                });
+            }
+        }
+
+        if (type === 'car'){
+            this.setState({
+                modelCar           : !this.state.modelCar,
+            });
+        }
+
+        if (type === 'code'){
+            this.setState({
+                modelCode    : !this.state.modelCode
+            });
+        }
+
+    }
+
+    selectId (type, id, name) {
+
+        if (type === 'country'){
+            this.setState({
+                modelCountry            : !this.state.modelCountry,
+                nameCountry             : name,
+                country_id              : id,
+                nameCity                : I18n.t('myCity'),
+                city_id                 : null,
+                cities                  : [],
+            });
+
+            this.setState({spinner: true});
+
+            axios.post(`${CONST.url}cities`, {
+                lang: this.props.lang,
+                country_id:  id
+            }).then((response) => {
+                this.setState({cities: response.data.data});
+            }).catch((error) => {
+                this.setState({spinner: false});
+            }).then(() => {
+                this.setState({spinner: false});
+            });
+
+        }
+
+        if (type === 'city'){
+            this.setState({
+                modelCity            : !this.state.modelCity,
+                nameCity             : name,
+                city_id              : id
+            });
+        }
+
+        if (type === 'car'){
+            this.setState({
+                modelCar             : !this.state.modelCar,
+                nameCar              : id,
+                year                 : id,
+            });
+        }
+
+        if (type === 'code'){
+            this.setState({
+                modelCode       : !this.state.modelCode,
+                nameCode         : id,
+                key             : id
+            });
+        }
+
     }
 
     renderLoader(){
@@ -172,6 +263,10 @@ class Edit_ad extends React.Component {
                         this.setState({is_refresh: response.data.data.is_refreshed});
                         this.setState({images: response.data.data.images});
                         this.setState({year: response.data.data.model});
+                        this.setState({nameCountry: response.data.data.country});
+                        this.setState({nameCity: response.data.data.city});
+                        this.setState({nameCode: response.data.data.key});
+                        this.setState({key: response.data.data.key});
                         this.setState({
                             region: {
                                 latitude:  response.data.data.latitude,
@@ -255,15 +350,13 @@ class Edit_ad extends React.Component {
         this.componentWillMount()
     }
 
-    onValueYear (value) {this.setState({year: value});}
-
     renderMap() {
         if(this.state.region.latitude !== null)
         {
             return (
-                <View style={[ styles.Width_90, styles.height_250, styles.Radius_5, styles.flexCenter, styles.marginVertical_10 ]}>
+                <View style={[ styles.Width_95, styles.height_150, styles.Radius_5, styles.flexCenter, styles.marginVertical_10, styles.Border, styles.overHidden ]}>
                     <MapView
-                        style={styles.map}
+                        style={[ styles.Width_100, styles.height_150 ]}
                         showsBuildings={true}
                         minZoomLevel={7}
 
@@ -285,42 +378,6 @@ class Edit_ad extends React.Component {
             region
         })
     };
-
-    onValueChange_key(key) {
-        this.setState({key : key});
-    }
-
-    onValueChange(value) {
-
-        this.setState({country_id: value});
-        setTimeout(()=>{
-
-            this.setState({spinner: true});
-            axios.post(`${CONST.url}cities`, { lang:this.props.lang , country_id: this.state.country_id })
-                .then( (response)=> {
-
-                    this.setState({cities: response.data.data});
-                    this.setState({city_id: response.data.data[0].id});
-
-                    axios.post(`${CONST.url}codes`, {lang: this.props.lang  })
-                        .then((response) => {
-                            this.setState({codes: response.data.data});
-                        })
-                        .catch((error) => {
-                            this.setState({spinner: false});
-                        }).then(() => {
-                        this.setState({spinner: false});
-                    });
-                })
-
-                .catch( (error)=> {
-                    this.setState({spinner: false});
-                }).then(()=>{
-                this.setState({spinner: false});
-            });
-
-        },1000);
-    }
 
     open() {
         ActionSheet.show(
@@ -435,28 +492,6 @@ class Edit_ad extends React.Component {
         );
     }
 
-    onValueChangeCity(value) {
-        this.setState({
-            city_id     : value
-        });
-    }
-
-    onValueChange_category(value) {
-        this.setState({category_id : value});
-        setTimeout(()=>{
-            axios.post(`${CONST.url}sub_categories`, { lang: this.props.lang  ,id : this.state.category_id })
-                .then( (response)=> {
-                    this.setState({sub_categories : response.data.data})
-                }).catch( (error)=> {
-                this.setState({spinner: false});
-            });
-        },1000);
-    }
-
-    onValueChange_sub(value) {
-        this.setState({sub_category_id : value});
-    }
-
     images_video = async (i) => {
 
         if (i.i === 0) {
@@ -481,7 +516,7 @@ class Edit_ad extends React.Component {
                 quality    : .5,
                 base64     : true
             });
-            if (!result.cancelled) {
+            if (result) {
                 this.setState({
                     photos: this.state.photos.concat(result.uri)
                 });
@@ -640,25 +675,6 @@ class Edit_ad extends React.Component {
         }
     };
 
-    onValueChangeSection(value){
-        this.setState({spinner: true , section_id: value});
-        axios.post(`${CONST.url}models`, {
-            lang       : this.props.lang ,
-            section_id : value
-        }).then((response)=> {
-            this.setState({
-                models : response.data.data,
-                spinner:false
-            });
-        }).catch(e => {
-            this.setState({spinner:false});
-        });
-    }
-
-    onValueChangeModel(value){
-        this.setState({ sub_section_id: value});
-    }
-
     render() {
         const { width } = Dimensions.get('window');
         if (this.state.imageBrowserOpen) {
@@ -697,7 +713,7 @@ class Edit_ad extends React.Component {
                             </TouchableOpacity>
                         </View>
                     </View>
-                    <ScrollView showsHorizontalScrollIndicator={false}    horizontal={true} style={{marginHorizontal: 20}}>
+                    <ScrollView showsHorizontalScrollIndicator={false} horizontal={true} style={{marginHorizontal: 20}}>
                         {this.state.photos.map((item,i) => this.renderImage(item,i))}
                         {this.state.images.map((item,i) => this.renderImages(item,i))}
                         {
@@ -719,96 +735,167 @@ class Edit_ad extends React.Component {
                                         <Icon name="close" style={{ color : 'white' , textAlign:'center', fontSize:22}}/>
                                     </TouchableOpacity>
                                 </View>
-                                : <View/>
+                                :
+                                <View/>
                         }
                     </ScrollView>
 
-                    <View style={[ styles.rowGroup, styles.paddingHorizontal_15, styles.marginVertical_10 ]}>
-                        <View style={[ styles.flex_50, { paddingHorizontal : 2 } ]}>
-                            <Item style={[ styles.itemPiker_second, { borderWidth : 0.5, borderColor : '#b5b5b5' } ]} regular>
-                                <Picker
-                                    iosHeader={I18n.translate('choose_country')}
-                                    headerBackButtonText={I18n.translate('goBack')}
-                                    mode="dropdown"
-                                    style={styles.Picker}
-                                    selectedValue={this.state.country_id}
-                                    onValueChange={this.onValueChange.bind(this)}
-                                    placeholderStyle={{ color: "#444", writingDirection: 'rtl', width : '100%',fontFamily : 'CairoRegular', fontSize : 14 }}
-                                    textStyle={{ color: "#444",fontFamily : 'CairoRegular', writingDirection: 'rtl',paddingLeft : 5, paddingRight: 5 }}
-                                    placeholder={I18n.translate('choose_country')}
-                                    itemTextStyle={{ color: '#444',fontFamily : 'CairoRegular', writingDirection: 'rtl' }}>
-
-                                    <Picker.Item style={styles.itemPicker} label={I18n.translate('choose_country')} value={null} />
-
-                                    {
-                                        this.state.countries.map((country, i) => (
-                                            <Picker.Item style={styles.itemPicker} label={country.name} value={country.id} />
-                                        ))
-                                    }
-
-                                </Picker>
-                                <Icon style={styles.iconPicker} type="AntDesign" name='down' />
-                            </Item>
+                    <View style={[ styles.rowGroup, styles.paddingHorizontal_5, styles.marginVertical_10 ]}>
+                        <View style={[ styles.flex_50, styles.paddingHorizontal_5 ]}>
+                            <TouchableOpacity onPress={() => this.toggleModal('country')} style={[ styles.Width_100 , styles.paddingHorizontal_10 , styles.rowGroup, styles.bg_White, { paddingVertical : 12 }]}>
+                                <Text style={[styles.textRegular, styles.textSize_11, styles.text_black]}>
+                                    { this.state.nameCountry }
+                                </Text>
+                                <Icon style={[styles.textSize_14, styles.text_gray]} type="AntDesign" name='down' />
+                            </TouchableOpacity>
                         </View>
-                        <View style={[ styles.flex_50, { paddingHorizontal : 2,position : 'relative', right : -2 } ]}>
-                            <Item style={[ styles.itemPiker_second, { borderWidth : 0.5, borderColor : '#b5b5b5' } ]} regular>
-                                <Picker
-                                    iosHeader={I18n.translate('myCity')}
-                                    headerBackButtonText={I18n.translate('goBack')}
-                                    mode="dropdown"
-                                    style={styles.Picker}
-                                    selectedValue={this.state.city_id}
-                                    onValueChange={this.onValueChangeCity.bind(this)}
-                                    placeholderStyle={{ color: "#444", writingDirection: 'rtl', width : '100%',fontFamily : 'CairoRegular', fontSize : 14 }}
-                                    textStyle={{ color: "#444",fontFamily : 'CairoRegular', writingDirection: 'rtl',paddingLeft : 5, paddingRight: 5 }}
-                                    placeholder={I18n.translate('myCity')}
-                                    itemTextStyle={{ color: '#444',fontFamily : 'CairoRegular', writingDirection: 'rtl' }}>
-
-                                    <Picker.Item style={styles.itemPicker} label={I18n.translate('all_cities')} value={null} />
-
-                                    {
-                                        this.state.cities.map((city, i) => (
-                                            <Picker.Item style={styles.itemPicker} key={i} label={city.name} value={city.id} />
-                                        ))
-                                    }
-
-                                </Picker>
-                                <Icon style={styles.iconPicker} type="AntDesign" name='down' />
-                            </Item>
+                        <View style={[ styles.flex_50, styles.paddingHorizontal_5 ]}>
+                            <TouchableOpacity onPress={() => this.toggleModal('city')} style={[ styles.Width_100 , styles.paddingHorizontal_10 , styles.rowGroup, styles.bg_White,{ paddingVertical : 12 }]}>
+                                <Text style={[styles.textRegular, styles.textSize_11, styles.text_black]}>
+                                    { this.state.nameCity }
+                                </Text>
+                                <Icon style={[styles.textSize_14, styles.text_gray]} type="AntDesign" name='down' />
+                            </TouchableOpacity>
                         </View>
                     </View>
 
-                    {
-                        (this.state.year !== null) ?
-                            <View style={[styles.Width_100, styles.paddingHorizontal_15]}>
-                                <View style={[styles.flexCenter,{ marginBottom : 5, marginTop : 15 }, styles.bg_White, styles.Width_100 , { borderBottomWidth : 1, borderBottomColor : '#DDD' }]}>
-                                    <Item style={[ styles.itemPiker_second, { borderWidth : 0.5, borderColor : '#b5b5b5' } ]} regular>
-                                        <Picker
-                                            mode                    = "dropdown"
-                                            style                   = {styles.Picker}
-                                            placeholderStyle        = {[styles.textRegular,{ color: "#444", writingDirection: 'rtl', width : '100%', fontSize : 14 }]}
-                                            selectedValue           = {this.state.year}
-                                            onValueChange           = {this.onValueYear.bind(this)}
-                                            textStyle               = {[styles.textRegular,{ color: "#444", writingDirection: 'rtl',paddingLeft : 5, paddingRight: 5 }]}
-                                            placeholder             = {I18n.translate('choose_model')}
-                                            itemTextStyle           = {[styles.textRegular,{ color: "#444", writingDirection: 'rtl' }]}
-                                        >
-                                            <Picker.Item style={[styles.itemPicker]} label={I18n.translate('choose_model')} value={null} />
+                    <Modal isVisible={this.state.modelCountry} onBackdropPress={() => this.toggleModal('country')} style={[styles.bottomCenter, styles.Width_100]}>
+                        <View style={[styles.overHidden, styles.bg_White, styles.Width_100, styles.position_R, styles.top_20, { borderTopLeftRadius: 30, borderTopRightRadius: 30 }]}>
 
-                                            {
-                                                this.state.years.map((year, i) => (
-                                                    <Picker.Item style={[styles.itemPicker]} key={i} label={year} value={year} />
-                                                ))
-                                            }
-
-                                        </Picker>
-                                    </Item>
-                                    <Icon style={styles.iconPicker} type="AntDesign" name='down' />
-                                </View>
+                            <View style={[styles.paddingHorizontal_10, styles.marginVertical_10]}>
+                                <ScrollView style={{ height: 300, width: '100%' }}>
+                                    <View>
+                                        {
+                                            this.state.countries.map((country, index) => {
+                                                    return (
+                                                        <TouchableOpacity
+                                                            key={index.toString()}
+                                                            style={[styles.rowGroup, styles.marginVertical_10]}
+                                                            onPress={() => this.selectId('country', country.id, country.name)}
+                                                        >
+                                                            <View style={[styles.overHidden, styles.rowRight]}>
+                                                                <CheckBox
+                                                                    style={[styles.checkBox, styles.bg_black, styles.borderBlack]}
+                                                                    color={styles.text_White}
+                                                                    selectedColor={styles.text_White}
+                                                                    checked={this.state.country_id === country.id}
+                                                                />
+                                                                <Text style={[styles.textRegular, styles.text_black, styles.textSize_16, styles.paddingHorizontal_20]}>
+                                                                    {country.name}
+                                                                </Text>
+                                                            </View>
+                                                        </TouchableOpacity>
+                                                    )
+                                                }
+                                            )
+                                        }
+                                    </View>
+                                </ScrollView>
                             </View>
-                            :
-                            <View/>
-                    }
+
+                        </View>
+                    </Modal>
+
+                    <Modal isVisible={this.state.modelCity} onBackdropPress={() => this.toggleModal('city')} style={[styles.bottomCenter, styles.Width_100]}>
+                        <View style={[styles.overHidden, styles.bg_White, styles.Width_100, styles.position_R, styles.top_20, { borderTopLeftRadius: 30, borderTopRightRadius: 30 }]}>
+
+                            <View style={[styles.paddingHorizontal_10, styles.marginVertical_10]}>
+
+                                {
+                                    this.state.cities.length != 0 ?
+                                        <ScrollView style={{ height: 300, width: '100%' }}>
+                                            <View>
+                                                {
+                                                    this.state.cities.map((city, index) => {
+                                                            return (
+                                                                <TouchableOpacity
+                                                                    key={index.toString()}
+                                                                    style={[styles.rowGroup, styles.marginVertical_10]}
+                                                                    onPress={() => this.selectId('city', city.id, city.name)}
+                                                                >
+                                                                    <View style={[styles.overHidden, styles.rowRight]}>
+                                                                        <CheckBox
+                                                                            style={[styles.checkBox, styles.bg_black, styles.borderBlack]}
+                                                                            color={styles.text_White}
+                                                                            selectedColor={styles.text_White}
+                                                                            checked={this.state.country_id === city.id}
+                                                                        />
+                                                                        <Text style={[styles.textRegular, styles.text_black, styles.textSize_16, styles.paddingHorizontal_20]}>
+                                                                            {city.name}
+                                                                        </Text>
+                                                                    </View>
+                                                                </TouchableOpacity>
+                                                            )
+                                                        }
+                                                    )
+                                                }
+                                            </View>
+                                        </ScrollView>
+                                        :
+                                        <View style={[ {height: 300}, styles.flexCenter]}>
+                                            <Text style={[styles.textRegular, styles.textSize_18, styles.text_red]}>
+                                                { I18n.t('ff') }
+                                            </Text>
+                                        </View>
+                                }
+
+                            </View>
+
+                        </View>
+                    </Modal>
+
+                    <View style={[ styles.paddingHorizontal_10 ]}>
+                        {
+                            (this.props.navigation.state.params.nameCar === 'car') ?
+                                <TouchableOpacity onPress={() => this.toggleModal('car')} style={[ styles.clickFunctionHome, styles.flex_100, styles.Width_100, styles.marginVertical_10, styles.paddingHorizontal_10, styles.bg_White, styles.height_50 ]}>
+                                    <Text style={[styles.textRegular, styles.textSize_11, styles.text_black]}>
+                                        { this.state.nameCar }
+                                    </Text>
+                                    <Icon style={[styles.textSize_14, styles.text_gray]} type="AntDesign" name='down' />
+                                </TouchableOpacity>
+                                :
+                                null
+                        }
+                    </View>
+
+                    <Modal isVisible={this.state.modelCar} onBackdropPress={() => this.toggleModal('car')} style={[styles.bottomCenter, styles.Width_100]}>
+                        <View style={[styles.overHidden, styles.bg_White, styles.Width_100, styles.position_R, styles.top_20, { borderTopLeftRadius: 30, borderTopRightRadius: 30 }]}>
+
+                            <View style={[styles.paddingHorizontal_10, styles.marginVertical_10]}>
+
+                                <ScrollView style={{ height: 300, width: '100%' }}>
+                                    <View>
+                                        {
+                                            this.state.years.map((year, index) => {
+                                                    return (
+                                                        <TouchableOpacity
+                                                            key={index.toString()}
+                                                            style={[styles.rowGroup, styles.marginVertical_10]}
+                                                            onPress={() => this.selectId('car', year)}
+                                                        >
+                                                            <View style={[styles.overHidden, styles.rowRight]}>
+                                                                <CheckBox
+                                                                    style={[styles.checkBox, styles.bg_black, styles.borderBlack]}
+                                                                    color={styles.text_White}
+                                                                    selectedColor={styles.text_White}
+                                                                    checked={this.state.year === year}
+                                                                />
+                                                                <Text style={[styles.textRegular, styles.text_black, styles.textSize_16, styles.paddingHorizontal_20]}>
+                                                                    {year}
+                                                                </Text>
+                                                            </View>
+                                                        </TouchableOpacity>
+                                                    )
+                                                }
+                                            )
+                                        }
+                                    </View>
+                                </ScrollView>
+
+                            </View>
+
+                        </View>
+                    </Modal>
 
                     {/*<KeyboardAvoidingView behavior="padding" style={{  flex: 1}} >*/}
                         <View style={[ styles.block_section , { margin : 0 , marginHorizontal : 10, padding : 0 ,paddingHorizontal : 5 } ]}>
@@ -896,9 +983,8 @@ class Edit_ad extends React.Component {
 
                             {/*</View>*/}
 
-
                             <View style={{flexDirection: 'row', width : '100%'}}>
-                                <View style={[ styles.flex_80 ]}>
+                                <View style={[ styles.flex_60 ]}>
                                     <View style={{
                                         padding                 : 0,
                                         width                   : '100%',
@@ -916,29 +1002,55 @@ class Edit_ad extends React.Component {
                                         />
                                     </View>
                                 </View>
-                                <View style={[ styles.flex_20 ]}>
-                                    <View style={[ styles.rowGroup , styles.position_R , { alignItems : 'center', paddingHorizontal : 0, borderWidth : 0.5, borderColor : '#b5b5b5' , borderLeftWidth : 0,top : 10, height : 50}]} regular>
-                                        <Picker
-                                            mode               ="dropdown"
-                                            style              ={{ color: '#9a9a9a',backgroundColor:'transparent' }}
-                                            iosHeader = {I18n.translate('keyCountry')}
-                                            headerBackButtonText={I18n.translate('goBack')}
-                                            selectedValue={this.state.key}
-                                            onValueChange={this.onValueChange_key.bind(this)}
-                                            textStyle          ={{ color: "#363636", paddingLeft  : 5, paddingRight : 5, fontSize : 12, paddingTop : 8}}
-                                            itemTextStyle      ={{ color: '#363636' }}>
-                                            {
-                                                this.state.codes.map((code, i) => {
-                                                    return <Picker.Item style={{color: "#363636"}}  key={i} value={code} label={code} />
-                                                })
-                                            }
-                                        </Picker>
-                                        <Icon style={[ styles.position_A, {color: "#363636", fontSize:13, right : 5, top: 19} ]} name='down' type="AntDesign"/>
-                                    </View>
+                                <View style={[ styles.flex_40 ]}>
+                                    <TouchableOpacity onPress={() => this.toggleModal('code')} style={[ styles.Width_100 , styles.paddingHorizontal_10 , styles.rowGroup, styles.Border, this.state.key !== null ? styles.borderRed : styles.borderGray, { paddingVertical : 14.5, marginTop : 10 }]}>
+                                        <Text style={[styles.textRegular, styles.textSize_11, styles.text_black]}>
+                                            { this.state.nameCode }
+                                        </Text>
+                                        <Icon style={[styles.textSize_14, styles.text_gray]} type="AntDesign" name='down' />
+                                    </TouchableOpacity>
                                 </View>
                             </View>
 
                         </View>
+
+
+                    <Modal isVisible={this.state.modelCode} onBackdropPress={() => this.toggleModal('code')} style={[styles.bottomCenter, styles.Width_100]}>
+                        <View style={[styles.overHidden, styles.bg_White, styles.Width_100, styles.position_R, styles.top_20, { borderTopLeftRadius: 30, borderTopRightRadius: 30 }]}>
+
+                            <View style={[styles.paddingHorizontal_10, styles.marginVertical_10]}>
+                                <ScrollView style={{ height: 300, width: '100%' }}>
+                                    <View>
+                                        {
+                                            this.state.codes.map((key, index) => {
+                                                    return (
+                                                        <TouchableOpacity
+                                                            key={index.toString()}
+                                                            style={[styles.rowGroup, styles.marginVertical_10]}
+                                                            onPress={() => this.selectId('code', key)}
+                                                        >
+                                                            <View style={[styles.overHidden, styles.rowRight]}>
+                                                                <CheckBox
+                                                                    style={[styles.checkBox, styles.bg_black, styles.borderBlack]}
+                                                                    color={styles.text_White}
+                                                                    selectedColor={styles.text_White}
+                                                                    checked={this.state.key === key}
+                                                                />
+                                                                <Text style={[styles.textRegular, styles.text_black, styles.textSize_16, styles.paddingHorizontal_20]}>
+                                                                    {key}
+                                                                </Text>
+                                                            </View>
+                                                        </TouchableOpacity>
+                                                    )
+                                                }
+                                            )
+                                        }
+                                    </View>
+                                </ScrollView>
+                            </View>
+
+                        </View>
+                    </Modal>
 
                         <View style={[styles.textsetting, styles.bgLiner, styles.height_40, styles.width_200, styles.Radius_5]}>
                             <Icon style={styles.icoSetting} type="Octicons" name='settings' />
