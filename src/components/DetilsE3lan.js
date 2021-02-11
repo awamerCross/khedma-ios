@@ -86,6 +86,8 @@ class DetilsE3lan extends Component {
         nameReason          : '',
         loadItem          : false,
         infoReason          : '',
+        typeBlog  : null,
+        arrImgBlogs : []
     };
 
   }
@@ -151,6 +153,18 @@ class DetilsE3lan extends Component {
 
     componentWillMount() {
 
+        console.log('type ----------------', this.props.navigation.state.params.type);
+
+        let objImg = {
+            url : this.props.navigation.state.params.img
+        };
+
+        this.state.arrImgBlogs.push(objImg);
+
+        this.setState({
+            typeBlog : this.props.navigation.state.params.type,
+        })
+
         this.runPlaceHolder();
 
         if(this.props.auth !== null) {
@@ -160,7 +174,7 @@ class DetilsE3lan extends Component {
         this.setState({spinner: true});
         axios.post(`${CONST.url}BlogDetails`, {
             lang        : this.props.lang ,
-            id          : this.props.navigation.state.params.blog_id  ,
+            id          : this.props.navigation.state.params.blog_id,
             user_id     : this.state.user_id
         })
             .then( (response)=> {
@@ -479,6 +493,7 @@ class DetilsE3lan extends Component {
       return (
 
       <Container style={{ backgroundColor : '#e5e5e5' }}>
+
           <Header style={styles.Header_Up}>
               <Left style={[styles.LeftDir,styles.flex]}>
                   <Button  transparent onPress={()=> this.onShare()} >
@@ -494,148 +509,152 @@ class DetilsE3lan extends Component {
                   </Button>
               </Right>
           </Header>
-                  <Content>
+
+          <Content>
+              {
+                  this.state.typeBlog == 0 ?
                       <View>
-                      <NavigationEvents onWillFocus={() => this.onFocus()}/>
+                          <NavigationEvents onWillFocus={() => this.onFocus()}/>
                           {  this.state.spinner ?
                               this._renderRows(this.loadingAnimated, 5, '5rows'):
-                      <View style={[styles.block_slider, {marginVertical: 0, marginTop : 10}]}>
-                          <View style={[styles.position_A, styles.overlay_black, styles.bottom_0, styles.Width_100, styles.rowGroups, styles.paddingVertical_5, styles.paddingHorizontal_5]}>
-                              {
-                                  (this.state.blog.user_id !== this.state.user_id) ?
-                                      <TouchableOpacity onPress={() => {this.props.navigation.navigate('UserDetailes', {user_id: this.state.id})}} style={{flexDirection: 'row', alignItems: 'center'}}>
-                                          <Image source={{uri: this.state.avatar}} style={{width: 30, height: 30, borderRadius: 50, borderWidth: 1, borderColor: '#DDD', marginHorizontal: 5}} resizeMode='cover'/>
-                                          <Text style={{fontSize: 13, fontFamily: 'CairoBold', color: "#FFF"}}>{this.state.name}</Text>
-                                      </TouchableOpacity>
-                                      :
-                                      <View/>
-                              }
-                              <Text style={[ styles.textRegular, styles.text_White, styles.textSize_14]}>
-                                  {this.state.blog.price} {this.state.currency}
-                              </Text>
-                          </View>
-                          {
-                              this.state.blog.user_id !== this.state.user_id ?
-                                  <TouchableOpacity
-                                      style={[ styles.bg_black, styles.width_30, styles.height_30, styles.flexCenter, styles.position_A, styles.right_0, styles.top_0 ]}
-                                      onPress={() => this.reportModalFun(this.props.navigation.state.params.blog_id , 'reportAdv')}
-                                  >
-                                      <Icon  style={styles.report} type="FontAwesome" name='flag' />
-                                  </TouchableOpacity>
-                                  :
-                                  <View/>
-                          }
-                          <Swiper containerStyle={styles.wrapper} autoplay={true}>
-                              {
-                                  this.state.images.map((slider, i) => {
-                                      return (
-                                          <View key={i}>
-                                              <TouchableOpacity onPress={() => {this.setState({isImageViewVisible: true})}}>
-                                                  <Image style={styles.slide} source={{uri: slider.url}}/>
+                              <View style={[styles.block_slider, {marginVertical: 0, marginTop : 10}]}>
+                                  <View style={[styles.position_A, styles.overlay_black, styles.bottom_0, styles.Width_100, styles.rowGroups, styles.paddingVertical_5, styles.paddingHorizontal_5]}>
+                                      {
+                                          (this.state.blog.user_id !== this.state.user_id) ?
+                                              <TouchableOpacity onPress={() => {this.props.navigation.navigate('UserDetailes', {user_id: this.state.id})}} style={{flexDirection: 'row', alignItems: 'center'}}>
+                                                  <Image source={{uri: this.state.avatar}} style={{width: 30, height: 30, borderRadius: 50, borderWidth: 1, borderColor: '#DDD', marginHorizontal: 5}} resizeMode='cover'/>
+                                                  <Text style={{fontSize: 13, fontFamily: 'CairoBold', color: "#FFF"}}>{this.state.name}</Text>
                                               </TouchableOpacity>
-                                          </View>
-                                      )
-                                  })
-                              }
-                          </Swiper>
-                      </View>}
-
-                          {
-                          this.state.spinner ?
-
-                              this._renderRows(this.loadingAnimated, 5, '5rows'):
-
-                      <View style={[styles.rowCenter , styles.paddingVertical_5 ,{ backgroundColor : '#F7F7F7',width : '95%' }]}>
-                          <View style={[ styles.flex_25, styles.flexCenter, styles.paddingHorizontal_10, styles.paddingVertical_5, { borderLeftColor : '#ebebeb', borderRightWidth : 1 } ]}>
-                              <TouchableOpacity
-                                  style={[styles.position_R, styles.padding_0, styles.margin_0,]}
-                                  onPress={() => this.favourite()}
-                              >
-                                  <View style={[]}>
-                                      <Icon style={{color: this.state.is_favourite === 1 ? '#f00' : '#231F20', fontSize: 20}} type="FontAwesome" name='heart'/>
+                                              :
+                                              <View/>
+                                      }
+                                      <Text style={[ styles.textRegular, styles.text_White, styles.textSize_14]}>
+                                          {this.state.blog.price} {this.state.currency}
+                                      </Text>
                                   </View>
-                              </TouchableOpacity>
-                          </View>
-                          {
-                              (this.state.blog.is_chat === true && this.state.user_id !== this.state.blog.user_id)  ?
-                                  <View style={[ styles.flex_25, styles.flexCenter, styles.paddingHorizontal_10, styles.paddingVertical_5, { borderLeftColor : '#ebebeb', borderRightWidth : 1 } ]}>
-                                      <TouchableOpacity onPress={() => {
-                                          this.props.navigation.navigate('chatroom', {
-                                              other: this.state.blog.user_id,
-                                              room: this.props.navigation.state.params.blog_id
+                                  {
+                                      this.state.blog.user_id !== this.state.user_id ?
+                                          <TouchableOpacity
+                                              style={[ styles.bg_black, styles.width_30, styles.height_30, styles.flexCenter, styles.position_A, styles.right_0, styles.top_0 ]}
+                                              onPress={() => this.reportModalFun(this.props.navigation.state.params.blog_id , 'reportAdv')}
+                                          >
+                                              <Icon  style={styles.report} type="FontAwesome" name='flag' />
+                                          </TouchableOpacity>
+                                          :
+                                          <View/>
+                                  }
+                                  <Swiper containerStyle={styles.wrapper} autoplay={true}>
+                                      {
+                                          this.state.images.map((slider, i) => {
+                                              return (
+                                                  <View key={i}>
+                                                      <TouchableOpacity onPress={() => {this.setState({isImageViewVisible: true})}}>
+                                                          <Image style={styles.slide} source={{uri: slider.url}}/>
+                                                      </TouchableOpacity>
+                                                  </View>
+                                              )
                                           })
-                                      }}>
-                                          <View style={[]}>
-                                              <View style={styles.marginHorizontal_5}>
-                                                  <Icon style={[styles.icon_blcok, {color: '#231F20', fontSize: 20}]} type="Ionicons" name='ios-chatbubbles'/>
+                                      }
+                                  </Swiper>
+                              </View>
+                          }
+
+                          {
+                              this.state.spinner ?
+
+                                  this._renderRows(this.loadingAnimated, 5, '5rows'):
+
+                                  <View style={[styles.rowCenter , styles.paddingVertical_5 ,{ backgroundColor : '#F7F7F7',width : '95%' }]}>
+                                      <View style={[ styles.flex_25, styles.flexCenter, styles.paddingHorizontal_10, styles.paddingVertical_5, { borderLeftColor : '#ebebeb', borderRightWidth : 1 } ]}>
+                                          <TouchableOpacity
+                                              style={[styles.position_R, styles.padding_0, styles.margin_0,]}
+                                              onPress={() => this.favourite()}
+                                          >
+                                              <View style={[]}>
+                                                  <Icon style={{color: this.state.is_favourite === 1 ? '#f00' : '#231F20', fontSize: 20}} type="FontAwesome" name='heart'/>
                                               </View>
-                                              {/*<Text style={styles.block_Call_text}>{I18n.translate('send_mail')}</Text>*/}
-                                          </View>
-                                      </TouchableOpacity>
+                                          </TouchableOpacity>
+                                      </View>
+                                      {
+                                          (this.state.blog.is_chat === true && this.state.user_id !== this.state.blog.user_id)  ?
+                                              <View style={[ styles.flex_25, styles.flexCenter, styles.paddingHorizontal_10, styles.paddingVertical_5, { borderLeftColor : '#ebebeb', borderRightWidth : 1 } ]}>
+                                                  <TouchableOpacity onPress={() => {
+                                                      this.props.navigation.navigate('chatroom', {
+                                                          other: this.state.blog.user_id,
+                                                          room: this.props.navigation.state.params.blog_id
+                                                      })
+                                                  }}>
+                                                      <View style={[]}>
+                                                          <View style={styles.marginHorizontal_5}>
+                                                              <Icon style={[styles.icon_blcok, {color: '#231F20', fontSize: 20}]} type="Ionicons" name='ios-chatbubbles'/>
+                                                          </View>
+                                                          {/*<Text style={styles.block_Call_text}>{I18n.translate('send_mail')}</Text>*/}
+                                                      </View>
+                                                  </TouchableOpacity>
+                                              </View>
+                                              :
+                                              <View/>
+                                      }
+                                      {
+                                          (this.state.blog.is_phone === true && this.state.user_id !== this.state.blog.user_id) ?
+                                              <View style={[ styles.flex_25, styles.flexCenter, styles.paddingHorizontal_10, styles.paddingVertical_5, { borderLeftColor : '#ebebeb', borderRightWidth : 1 } ]}>
+                                                  <TouchableOpacity onPress={() => {Linking.openURL(`tel://${this.state.blog.mobile}`)}}>
+                                                      <View style={styles.marginHorizontal_5}>
+                                                          <Icon style={[styles.icon_blcok, {color: '#231F20', fontSize: 20}]} type="Ionicons" name='ios-call'/>
+                                                      </View>
+                                                      {/*<Text style={styles.block_Call_text}>{I18n.translate('call')}</Text>*/}
+                                                  </TouchableOpacity>
+                                              </View>
+                                              :
+                                              <View/>
+                                      }
+                                      {
+                                          (this.state.blog.is_phone === true && this.state.user_id !== this.state.blog.user_id) ?
+                                              <View style={[ styles.flex_25, styles.flexCenter, styles.paddingHorizontal_10, styles.paddingVertical_5 ]}>
+                                                  <TouchableOpacity onPress={() => {Linking.openURL('http://api.whatsapp.com/send?phone=' + this.state.blog.mobile);}}>
+                                                      <View style={styles.marginHorizontal_5}>
+                                                          <Icon style={[styles.icon_blcok, {color: '#231F20', fontSize: 20}]} type="Ionicons" name='logo-whatsapp'/>
+                                                      </View>
+                                                      {/*<Text style={styles.block_Call_text}>{I18n.translate('whats')}</Text>*/}
+                                                  </TouchableOpacity>
+                                              </View>
+                                              :
+                                              <View/>
+                                      }
                                   </View>
-                                  :
-                                  <View/>
                           }
+
                           {
-                              (this.state.blog.is_phone === true && this.state.user_id !== this.state.blog.user_id) ?
-                                  <View style={[ styles.flex_25, styles.flexCenter, styles.paddingHorizontal_10, styles.paddingVertical_5, { borderLeftColor : '#ebebeb', borderRightWidth : 1 } ]}>
-                                  <TouchableOpacity onPress={() => {Linking.openURL(`tel://${this.state.blog.mobile}`)}}>
-                                          <View style={styles.marginHorizontal_5}>
-                                              <Icon style={[styles.icon_blcok, {color: '#231F20', fontSize: 20}]} type="Ionicons" name='ios-call'/>
-                                          </View>
-                                          {/*<Text style={styles.block_Call_text}>{I18n.translate('call')}</Text>*/}
-                                  </TouchableOpacity>
-                                  </View>
+                              this.state.spinner ?
+                                  this._renderRows(this.loadingAnimated, 5, '5rows')
                                   :
-                                  <View/>
+                                  null
                           }
-                          {
-                              (this.state.blog.is_phone === true && this.state.user_id !== this.state.blog.user_id) ?
-                                  <View style={[ styles.flex_25, styles.flexCenter, styles.paddingHorizontal_10, styles.paddingVertical_5 ]}>
-                                  <TouchableOpacity onPress={() => {Linking.openURL('http://api.whatsapp.com/send?phone=' + this.state.blog.mobile);}}>
-                                          <View style={styles.marginHorizontal_5}>
-                                              <Icon style={[styles.icon_blcok, {color: '#231F20', fontSize: 20}]} type="Ionicons" name='logo-whatsapp'/>
-                                          </View>
-                                          {/*<Text style={styles.block_Call_text}>{I18n.translate('whats')}</Text>*/}
-                                  </TouchableOpacity>
-                                  </View>
-                                  :
-                                  <View/>
-                          }
-                      </View>
-                     }
-
-                      {
-                          this.state.spinner ?
-                              this._renderRows(this.loadingAnimated, 5, '5rows')
-                              :
-                              null
-                      }
 
 
 
-                      <View style={[ styles.Width_100, styles.paddingVertical_10, styles.paddingHorizontal_10 ]}>
-                          <Text style={[styles.TiTle, styles.textSize_16]}>- {I18n.translate('description')}</Text>
-                          <View style={[styles.Width_90, styles.paddingHorizontal_10]}>
-                              <HTML
-                                  html={this.state.blog.description}
-                                  baseFontStyle={{
-                                      fontSize            : 13,
-                                      fontFamily          : 'CairoBold',
-                                      color               : '#444' ,
-                                      writingDirection    : I18nManager.isRTL ? 'rtl' : 'ltr'
-                                  }}
-                                  magesMaxWidth={Dimensions.get('window').width}
-                              />
+                          <View style={[ styles.Width_100, styles.paddingVertical_10, styles.paddingHorizontal_10 ]}>
+                              <Text style={[styles.TiTle, styles.textSize_16]}>- {I18n.translate('description')}</Text>
+                              <View style={[styles.Width_90, styles.paddingHorizontal_10]}>
+                                  <HTML
+                                      html={this.state.blog.description}
+                                      baseFontStyle={{
+                                          fontSize            : 13,
+                                          fontFamily          : 'CairoBold',
+                                          color               : '#444' ,
+                                          writingDirection    : I18nManager.isRTL ? 'rtl' : 'ltr'
+                                      }}
+                                      magesMaxWidth={Dimensions.get('window').width}
+                                  />
+                              </View>
                           </View>
-                      </View>
 
-                      <TouchableOpacity
-                          onPress={()=> {this.openMap(this.state.region.latitude , this.state.region.longitude)}}
-                          style={[ styles.rowCenter, styles.marginVertical_15 ]}>
-                          <Icon name={'location-pin'} type={'Entypo'} style={[ styles.text_red, styles.textSize_14 ]}/>
-                          <Text style={[styles.textBold, styles.textSize_14, styles.text_red, styles.textDecoration]}>{I18n.translate('show_location')}</Text>
-                      </TouchableOpacity>
+                          <TouchableOpacity
+                              onPress={()=> {this.openMap(this.state.region.latitude , this.state.region.longitude)}}
+                              style={[ styles.rowCenter, styles.marginVertical_15 ]}>
+                              <Icon name={'location-pin'} type={'Entypo'} style={[ styles.text_red, styles.textSize_14 ]}/>
+                              <Text style={[styles.textBold, styles.textSize_14, styles.text_red, styles.textDecoration]}>{I18n.translate('show_location')}</Text>
+                          </TouchableOpacity>
 
                           <View style={[ styles.paddingHorizontal_10, styles.paddingVertical_10 , styles.Width_95 , styles.centerColum , { backgroundColor : '#F7F7F7' }]}>
                               <View style={[ styles.rowGroup, styles.Width_100 ]}>
@@ -674,7 +693,7 @@ class DetilsE3lan extends Component {
                                           <Text style={[ styles.textRegular, styles.textSize_14, styles.text_gray ]}>{this.state.blog.city} </Text>
                                       </View>
                                   </View>
-                            </View>
+                              </View>
                               <View style={[ styles.Width_100 ]}>
                                   <Text style={[styles.textBold, styles.textSize_18, styles.marginVertical_10, styles.marginHorizontal_5, { writingDirection : I18nManager.isRTL ? 'rtl' : 'ltr' }]}>
                                       {this.state.blog.title}
@@ -683,7 +702,7 @@ class DetilsE3lan extends Component {
                               <View style={[styles.rowFlex , styles.Width_100, { marginTop : 5 }]}>
                                   <View style={[styles.rowFlex]}>
                                       <View style={[ styles.flexCenter, styles.width_30, styles.height_30 ]}>
-                                        <Icon style={[ styles.textSize_14, styles.text_gray ]} type="Feather" name='flag'/>
+                                          <Icon style={[ styles.textSize_14, styles.text_gray ]} type="Feather" name='flag'/>
                                       </View>
                                       <Text style={[ styles.textRegular, styles.textSize_14, styles.text_gray ]}>{this.state.blog.country} </Text>
                                   </View>
@@ -727,147 +746,243 @@ class DetilsE3lan extends Component {
                               }
                           </View>
 
-                      <View style={{paddingHorizontal: 10}}>
+                          <View style={{paddingHorizontal: 10}}>
+
+                              {
+                                  (this.state.show_model === 1) ?
+                                      <View>
+                                          <Text style={[styles.TiTle, styles.textSize_16]}>- {I18n.translate('model')}</Text>
+                                          <View style={[styles.Width_90, styles.paddingHorizontal_10]}>
+                                              <Text style={[ styles.textRegular , styles.text_gray, styles.textSize_14, { writingDirection : I18nManager.isRTL ? 'rtl' : 'ltr' } ]}>
+                                                  { this.state.model_car }
+                                              </Text>
+                                          </View>
+                                      </View>
+                                      :
+                                      <View/>
+                              }
+
+                          </View>
+
+                          <View style={styles.comment}>
+                              <Text style={[styles.TiTle, styles.textSize_16]}>- {I18n.translate('comments')}</Text>
+                              {
+                                  this.state.comments.length !== 0 ?
+                                      this.state.comments.map((comment, i) => {
+                                          return (
+                                              <View key={i} style={[ styles.massage_user, styles.bg_White ]}>
+                                                  <View style={styles.user}>
+                                                      <Text style={[ styles.text_gray, styles.textRegular, styles.textSize_12 ]}>{comment.date}</Text>
+                                                      <View style={styles.views}>
+                                                          <Icon style={styles.icon_user} type="FontAwesome5" name='user'/>
+                                                          <Text style={[styles.text_user]}>
+                                                              {comment.user}
+                                                          </Text>
+                                                      </View>
+                                                  </View>
+                                                  <View style={[styles.block_massage, styles.SelfLeft]}>
+                                                      <Text style={[styles.massage, styles.SelfLeft]}>{comment.comment}</Text>
+                                                  </View>
+                                                  {
+                                                      (this.state.user_id == comment.user_id)
+                                                          ?
+                                                          <TouchableOpacity style={[ styles.bg_black, styles.width_30, styles.height_30, styles.flexCenter, styles.Radius_30, styles.position_A, styles.right_0, { top : -15 } ]} onPress={() => {this.delete(comment.id, i, 'original')}}>
+                                                              <Icon style={styles.report} type="FontAwesome" name='trash'/>
+                                                          </TouchableOpacity>
+                                                          :
+                                                          <View/>
+                                                  }
+                                                  {
+                                                      (this.state.user_id !== comment.user_id && this.props.auth) ?
+                                                          <TouchableOpacity style={[ styles.bg_black, styles.width_30, styles.height_30, styles.flexCenter, styles.Radius_30, styles.position_A, styles.right_0, { top : -15 } ]} onPress={() => this.reportModalFun(comment.id, 'reportComment')}>
+                                                              <Icon  style={styles.report} type="FontAwesome" name='flag' />
+                                                          </TouchableOpacity>
+                                                          :
+                                                          <View/>
+                                                  }
+                                              </View>
+                                          )
+                                      })
+                                      :
+                                      <View style={[ styles.flexCenter, styles.marginVertical_20, styles.Width_100 ]}>
+                                          <Text style={[ styles.text_red, styles.textRegular ]}>
+                                              {I18n.translate('noCom')}
+                                          </Text>
+                                      </View>
+                              }
+
+                          </View>
+
+                          <Modal isVisible={this.state.is_video} avoidKeyboard={true}>
+                              <View style={[styles.model, {backgroundColor: '#ff785f'}]}>
+                                  <Video
+                                      source={{uri: this.state.blog.video}}
+                                      shouldPlay
+                                      resizeMode="cover"
+                                      style={{width: '100%', height: 300}}
+                                  />
+                                  <TouchableOpacity onPress={() => {this.setState({is_video: false})}}>
+                                      <Text style={{color: 'white', textAlign: 'center', fontSize: 22}}>{I18n.translate('cancel')}</Text>
+                                  </TouchableOpacity>
+                              </View>
+                          </Modal>
+
+                          <View style={[styles.old_section, {marginHorizontal: 5}]}>
+                              <Text style={[styles.TiTle]}>{I18n.translate('like')}</Text>
+                              <ScrollView showsHorizontalScrollIndicator={false} horizontal={true}>
+                                  {this.state.results.map((result, i) => {
+                                      return (
+                                          <View key={i} style={[styles.block_section_move_mune, styles.width_200, {padding: 0}]}>
+                                              <TouchableOpacity onPress={() => {
+                                                  this.props.navigation.navigate({routeName: 'details', params: {blog_id: result.id,}, key: 'APage' + i})}}>
+                                                  <View style={{position: 'relative', overflow: 'hidden'}}>
+                                                      <Image style={styles.image_MAZAD} source={{uri: result.img}}/>
+                                                      <Text style={[styles.textDate, {textAlign: 'right', fontSize: 10, fontFamily: 'CairoBold'}]}>{result.date}</Text>
+                                                  </View>
+                                                  <View style={[styles.overHidden, styles.paddingVertical_10, styles.paddingHorizontal_10]}>
+                                                      <View style={{flexDirection: 'row', width: '100%', marginVertical: 5}}>
+                                                          <Text style={{fontSize: 13, color: '#bbb', fontFamily: 'CairoBold'}} numberOfLines={1} ellipsizeMode='tail'>
+                                                              {result.title}
+                                                          </Text>
+                                                      </View>
+                                                      <View style={{flexDirection: 'row', width: '100%', alignItems: 'center', justifyContent: 'space-between'}}>
+                                                          <View style={{flexDirection: 'row'}}>
+                                                              <Icon style={styles.icon_user} type="FontAwesome5" name='user'/>
+                                                              <Text style={styles.text_user}>
+                                                                  {result.user}
+                                                              </Text>
+                                                          </View>
+                                                          <View style={{flexDirection: 'row'}}>
+                                                              <Icon style={styles.icon_user} type="FontAwesome5" name='map-marker-alt'/>
+                                                              <Text style={styles.text_user}>{result.country}</Text>
+                                                          </View>
+                                                      </View>
+                                                  </View>
+                                              </TouchableOpacity>
+                                          </View>
+                                      )
+                                  })}
+                              </ScrollView>
+                          </View>
+
+                          <Modal
+                              style={{backgroundColor: 'transeprent'}}
+                              visible={this.state.isImageViewVisible}
+                              transparent={true}
+                              enableImageZoom={true}
+                              enableSwipeDown={true}
+                          >
+                              <ImageViewer
+                                  style={{backgroundColor: 'transeprent'}}
+                                  imageUrls={this.state.blog.images}
+                                  onSaveToCamera = {true}
+                              />
+                              <TouchableOpacity
+                                  style={{position: 'absolute', top: 35, right: 20}}
+                                  onPress={() => this.setState({isImageViewVisible: false})}
+                              >
+                                  <Icon
+                                      name="close"
+                                      style={{fontSize: 30, color: 'white'}}
+                                  />
+                              </TouchableOpacity>
+                          </Modal>
+                      </View>
+                      :
+                      <View>
+
+                          <View style={[styles.block_slider, {marginVertical: 0, marginTop : 10}]}>
+                              <TouchableOpacity style={[ styles.Width_100, styles.height_250 ]} onPress={() => {this.setState({isImageViewVisible: true})}}>
+                                  <Image style={[ styles.Width_100, styles.height_250 ]} source={{uri: this.props.navigation.state.params.img}}/>
+                              </TouchableOpacity>
+                          </View>
+
+                          <Modal
+                              style={{backgroundColor: 'transeprent'}}
+                              visible={this.state.isImageViewVisible}
+                              transparent={true}
+                              enableImageZoom={true}
+                              enableSwipeDown={true}
+                          >
+                              <ImageViewer
+                                  style={{backgroundColor: 'transeprent'}}
+                                  imageUrls={this.state.arrImgBlogs}
+                                  onSaveToCamera = {true}
+                              />
+                              <TouchableOpacity
+                                  style={{position: 'absolute', top: 35, right: 20}}
+                                  onPress={() => this.setState({isImageViewVisible: false})}
+                              >
+                                  <Icon
+                                      name="close"
+                                      style={{fontSize: 30, color: 'white'}}
+                                  />
+                              </TouchableOpacity>
+                          </Modal>
+
 
                           {
-                              (this.state.show_model === 1) ?
-                                  <View>
-                                      <Text style={[styles.TiTle, styles.textSize_16]}>- {I18n.translate('model')}</Text>
+                              this.props.navigation.state.params.phone && this.props.navigation.state.params.whats ?
+                                  <View style={[ styles.rowCenter, styles.marginVertical_10 ]}>
+
+                                      {
+                                          (this.props.navigation.state.params.phone) ?
+                                              <View style={[ styles.marginHorizontal_5,styles.width_50, styles.height_50, styles.flexCenter, styles.bg_black, styles.Radius_5 ]}>
+                                                  <TouchableOpacity onPress={() => {Linking.openURL(`tel://${this.props.navigation.state.params.phone}`)}}>
+                                                      <Icon style={{color: '#fff', fontSize: 20}} type="Ionicons" name='ios-call'/>
+                                                  </TouchableOpacity>
+                                              </View>
+                                              :
+                                              <View/>
+                                      }
+                                      {
+                                          (this.props.navigation.state.params.whats) ?
+                                              <View style={[ styles.marginHorizontal_5,styles.width_50, styles.height_50, styles.flexCenter, styles.bg_black, styles.Radius_5 ]}>
+                                                  <TouchableOpacity onPress={() => {Linking.openURL('http://api.whatsapp.com/send?phone=' + this.props.navigation.state.params.whats);}}>
+                                                      <Icon style={{color: '#fff', fontSize: 20}} type="Ionicons" name='logo-whatsapp'/>
+                                                  </TouchableOpacity>
+                                              </View>
+                                              :
+                                              <View/>
+                                      }
+
+                                  </View>
+                                  :
+                                  <View style={[ styles.marginVertical_20, styles.flexCenter ]}>
+                                      <Text style={[ styles.text_red, styles.textBold, styles.textSize_16 ]}>
+                                          {I18n.translate('noCon')}
+                                      </Text>
+                                  </View>
+                          }
+
+                          {
+                              (this.props.navigation.state.params.dsec) ?
+                                  <View style={[ styles.Width_100, styles.paddingVertical_10, styles.paddingHorizontal_10 ]}>
+                                      <Text style={[styles.TiTle, styles.textSize_16]}>- {I18n.translate('description')}</Text>
                                       <View style={[styles.Width_90, styles.paddingHorizontal_10]}>
-                                          <Text style={[ styles.textRegular , styles.text_gray, styles.textSize_14, { writingDirection : I18nManager.isRTL ? 'rtl' : 'ltr' } ]}>
-                                              { this.state.model_car }
-                                          </Text>
+                                          <HTML
+                                              html={this.props.navigation.state.params.dsec}
+                                              baseFontStyle={{
+                                                  fontSize            : 13,
+                                                  fontFamily          : 'CairoBold',
+                                                  color               : '#444',
+                                                  writingDirection    : I18nManager.isRTL ? 'rtl' : 'ltr'
+                                              }}
+                                              magesMaxWidth={Dimensions.get('window').width}
+                                          />
                                       </View>
                                   </View>
                                   :
-                                  <View/>
-                          }
-
-                      </View>
-                      <View style={styles.comment}>
-                          <Text style={[styles.TiTle, styles.textSize_16]}>- {I18n.translate('comments')}</Text>
-                          {
-                              this.state.comments.length !== 0 ?
-                                  this.state.comments.map((comment, i) => {
-                                      return (
-                                          <View key={i} style={[ styles.massage_user, styles.bg_White ]}>
-                                              <View style={styles.user}>
-                                                  <Text style={[ styles.text_gray, styles.textRegular, styles.textSize_12 ]}>{comment.date}</Text>
-                                                  <View style={styles.views}>
-                                                      <Icon style={styles.icon_user} type="FontAwesome5" name='user'/>
-                                                      <Text style={[styles.text_user]}>
-                                                          {comment.user}
-                                                      </Text>
-                                                  </View>
-                                              </View>
-                                              <View style={[styles.block_massage, styles.SelfLeft]}>
-                                                  <Text style={[styles.massage, styles.SelfLeft]}>{comment.comment}</Text>
-                                              </View>
-                                              {
-                                                  (this.state.user_id == comment.user_id)
-                                                      ?
-                                                      <TouchableOpacity style={[ styles.bg_black, styles.width_30, styles.height_30, styles.flexCenter, styles.Radius_30, styles.position_A, styles.right_0, { top : -15 } ]} onPress={() => {this.delete(comment.id, i, 'original')}}>
-                                                          <Icon style={styles.report} type="FontAwesome" name='trash'/>
-                                                      </TouchableOpacity>
-                                                      :
-                                                      <View/>
-                                              }
-                                              {
-                                                  (this.state.user_id !== comment.user_id && this.props.auth) ?
-                                                      <TouchableOpacity style={[ styles.bg_black, styles.width_30, styles.height_30, styles.flexCenter, styles.Radius_30, styles.position_A, styles.right_0, { top : -15 } ]} onPress={() => this.reportModalFun(comment.id, 'reportComment')}>
-                                                          <Icon  style={styles.report} type="FontAwesome" name='flag' />
-                                                      </TouchableOpacity>
-                                                      :
-                                                      <View/>
-                                              }
-                                          </View>
-                                      )
-                                  })
-                                  :
-                                  <View style={[ styles.flexCenter, styles.marginVertical_20, styles.Width_100 ]}>
-                                      <Text style={[ styles.text_red, styles.textRegular ]}>
-                                          {I18n.translate('noCom')}
+                                  <View style={[ styles.marginVertical_20, styles.flexCenter ]}>
+                                      <Text style={[ styles.text_red, styles.textBold, styles.textSize_16 ]}>
+                                          {I18n.translate('noD')}
                                       </Text>
                                   </View>
                           }
 
                       </View>
-                      <Modal isVisible={this.state.is_video} avoidKeyboard={true}>
-                          <View style={[styles.model, {backgroundColor: '#ff785f'}]}>
-                              <Video
-                                  source={{uri: this.state.blog.video}}
-                                  shouldPlay
-                                  resizeMode="cover"
-                                  style={{width: '100%', height: 300}}
-                              />
-                              <TouchableOpacity onPress={() => {this.setState({is_video: false})}}>
-                                  <Text style={{color: 'white', textAlign: 'center', fontSize: 22}}>{I18n.translate('cancel')}</Text>
-                              </TouchableOpacity>
-                          </View>
-                      </Modal>
-
-                      <View style={[styles.old_section, {marginHorizontal: 5}]}>
-                          <Text style={[styles.TiTle]}>{I18n.translate('like')}</Text>
-                          <ScrollView showsHorizontalScrollIndicator={false} horizontal={true}>
-                              {this.state.results.map((result, i) => {
-                                  return (
-                                      <View key={i} style={[styles.block_section_move_mune, styles.width_200, {padding: 0}]}>
-                                          <TouchableOpacity onPress={() => {
-                                              this.props.navigation.navigate({routeName: 'details', params: {blog_id: result.id,}, key: 'APage' + i})}}>
-                                              <View style={{position: 'relative', overflow: 'hidden'}}>
-                                                  <Image style={styles.image_MAZAD} source={{uri: result.img}}/>
-                                                  <Text style={[styles.textDate, {textAlign: 'right', fontSize: 10, fontFamily: 'CairoBold'}]}>{result.date}</Text>
-                                              </View>
-                                              <View style={[styles.overHidden, styles.paddingVertical_10, styles.paddingHorizontal_10]}>
-                                                  <View style={{flexDirection: 'row', width: '100%', marginVertical: 5}}>
-                                                      <Text style={{fontSize: 13, color: '#bbb', fontFamily: 'CairoBold'}} numberOfLines={1} ellipsizeMode='tail'>
-                                                          {result.title}
-                                                      </Text>
-                                                  </View>
-                                                  <View style={{flexDirection: 'row', width: '100%', alignItems: 'center', justifyContent: 'space-between'}}>
-                                                      <View style={{flexDirection: 'row'}}>
-                                                          <Icon style={styles.icon_user} type="FontAwesome5" name='user'/>
-                                                          <Text style={styles.text_user}>
-                                                              {result.user}
-                                                          </Text>
-                                                      </View>
-                                                      <View style={{flexDirection: 'row'}}>
-                                                          <Icon style={styles.icon_user} type="FontAwesome5" name='map-marker-alt'/>
-                                                          <Text style={styles.text_user}>{result.country}</Text>
-                                                      </View>
-                                                  </View>
-                                              </View>
-                                          </TouchableOpacity>
-                                      </View>
-                                  )
-                              })}
-                          </ScrollView>
-                      </View>
-
-                      <Modal
-                          style={{backgroundColor: 'transeprent'}}
-                          visible={this.state.isImageViewVisible}
-                          transparent={true}
-                          enableImageZoom={true}
-                          enableSwipeDown={true}
-                      >
-                          <ImageViewer
-                              style={{backgroundColor: 'transeprent'}}
-                              imageUrls={this.state.blog.images}
-                              onSaveToCamera = {true}
-                          />
-                          <TouchableOpacity
-                              style={{position: 'absolute', top: 35, right: 20}}
-                              onPress={() => this.setState({isImageViewVisible: false})}
-                          >
-                              <Icon
-                                  name="close"
-                                  style={{fontSize: 30, color: 'white'}}
-                              />
-                          </TouchableOpacity>
-                      </Modal>
-                  </View>
-                  </Content>
+              }
+          </Content>
 
           <Modal avoidKeyboard={true} onBackdropPress={() => this.setState({ commentModal: false })} isVisible={this.state.commentModal}>
               <View style={styles.model}>

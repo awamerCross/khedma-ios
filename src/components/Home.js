@@ -92,6 +92,8 @@ class Home extends React.Component {
             nameCity: I18n.t('choose_city'),
             modelCity: false,
 
+            loadBlogs : false
+
         };
     }
 
@@ -276,13 +278,24 @@ class Home extends React.Component {
             <View style={[ styles.overHidden ]}>
                 {
                     item.type == 1 ?
-                        <View style={[ styles.Width_95, { height: width/1.8 }, styles.marginVertical_10, styles.Border, styles.borderOpcityGray,styles.Radius_5, styles.flexCenter ]}>
+                        <TouchableOpacity
+                            onPress={() => { this.props.navigation.navigate({
+                                routeName: 'details', params: {
+                                    blog_id     : item.id,
+                                    type        : item.type,
+                                    img         : item.img,
+                                    dsec        : item.dsec,
+                                    phone       : item.phone,
+                                    whats       : item.whats
+                                }}
+                            )}}
+                            style={[ styles.Width_95, { height: width/1.8 }, styles.marginVertical_10, styles.Border, styles.borderOpcityGray,styles.Radius_5, styles.flexCenter ]}>
                             <Image style={[styles.Radius_5,  styles.Width_100, styles.heightFull ]}  {...{preview, uri : item.img}} resizeMode={'cover'} />
-                        </View>
+                        </TouchableOpacity>
                         :
                         <Animatable.View animation="zoomInUp" easing="ease-out" delay={400}>
                             <TouchableOpacity
-                                onPress={() => {this.props.navigation.navigate('details',{ blog_id : item.id})} }
+                                onPress={() => {this.props.navigation.navigate('details',{ blog_id : item.id, type : item.type})} }
                                 key={ key }
                                 style={[ styles.rowGroup, styles.paddingHorizontal_5, styles.Border_Btn_Opc_Gray, styles.paddingVertical_5 ]}
                             >
@@ -325,11 +338,22 @@ class Home extends React.Component {
             <View style={{ flexBasis: '50%' }}>
                 {
                     item.type == 1 ?
-                        <View style={[ styles.Width_100, { height: 200 }, styles.marginVertical_5, styles.Border, styles.borderOpcityGray, styles.flexCenter ]}>
+                        <TouchableOpacity
+                            onPress={() => { this.props.navigation.navigate({
+                                routeName: 'details', params: {
+                                    blog_id     : item.id,
+                                    type        : item.type,
+                                    img         : item.img,
+                                    dsec        : item.dsec,
+                                    phone       : item.phone,
+                                    whats       : item.whats
+                                }}
+                            )}}
+                            style={[ styles.Width_100, { height: 200 }, styles.marginVertical_5, styles.Border, styles.borderOpcityGray, styles.flexCenter ]}>
                             <Image style={[styles.Width_100, styles.heightFull ]}  {...{preview, uri : item.img}} resizeMode={'stretch'} />
-                        </View>
+                        </TouchableOpacity>
                         :
-                        <TouchableOpacity onPress={() => { this.props.navigation.navigate({routeName: 'details', params: {blog_id: item.id,}, key: 'APage' + i})}}>
+                        <TouchableOpacity onPress={() => { this.props.navigation.navigate({routeName: 'details', params: {blog_id: item.id, type : item.type}})}}>
                             <View style={[styles.block_section_mero ]}>
                                 <View style={{ position : 'relative', overflow : 'hidden' }}>
                                     <Image style={styles.image_MAZAD} {...{preview, uri : item.img}}/>
@@ -381,7 +405,7 @@ class Home extends React.Component {
 
     getBlogsData() {
         this.setState({
-            loader               :    true,
+            loadBlogs               :    true,
             page                 :    this.state.page
         },()=>{
             axios.post(`${CONST.url}get-blogs`, {
@@ -398,13 +422,15 @@ class Home extends React.Component {
                     loader       :   response.data.data.length === 0 ? true :false,
                     blogs        :   this.state.page === 1 || this.state.page === 0 ? response.data.data : this.state.blogs.concat(response.data.data),
                     spinner      :   false,
+                    loadBlogs      :   false,
                     page         :   this.state.page + 1
                 });
 
             }).catch(err => {
                 this.setState({
                     spinner      :  false,
-                    loader       :  response.data.data.length === 0 ? true :false,
+                    loadBlogs      :  false,
+                    loader       :  false,
                 });
             })
         });
@@ -490,6 +516,8 @@ class Home extends React.Component {
                 country_id       :  null ,
                 category_id      :  null,
                 model            :  null,
+                nameCountry: I18n.t('choose_country'),
+                nameCity: I18n.t('choose_city'),
                 page             :  1,
                 blogs            : [],
                 loader           : false
@@ -582,6 +610,16 @@ class Home extends React.Component {
         }
     }
 
+    renderLoaderBlogs(){
+        if (this.state.loadBlogs){
+            return(
+                <View style={[styles.loading, styles.flexCenter]}>
+                    <ActivityIndicator size="large" color="#444" />
+                </View>
+            );
+        }
+    }
+
     render() {
 
         this.loadingAnimated = [];
@@ -630,7 +668,7 @@ class Home extends React.Component {
                         </Button>
                     </Right>
                 </Header>
-                <Content scrollEnabled={false} contentContainerStyle={{ flexGrow: 1,flex: 1, height: Dimensions.get('window').height, paddingBottom : 130 }} >
+                <Content scrollEnabled={false} contentContainerStyle={{ flexGrow: 1,flex: 1, height: Dimensions.get('window').height, paddingBottom : 100 }} >
                     <View style={[ styles.overHidden ]}>
                     <ScrollView showsHorizontalScrollIndicator={false} horizontal={true} style={styles.scroll}>
                         <View  style={[ styles.flexCenter ]}>
@@ -776,11 +814,11 @@ class Home extends React.Component {
 
                     <View style={[styles.flexCenter, styles.Width_100, styles.bgFullWidth, {flexWrap: 'wrap'}]}>
 
-                         { (this.state.blogs.length === 0) ? this.noResults() : null}
+                        {this.renderLoaderBlogs()}
 
                          {
-                             this.state.spinner ?
-                                 this._renderRows(this.loadingAnimated, 5, '5rows')
+                             (this.state.blogs.length === 0) ?
+                                 this.noResults()
                                  :
                                  <FlatList
                                      data={this.state.blogs}
@@ -802,7 +840,7 @@ class Home extends React.Component {
 
                 {
                     this.state.blogs.length >= 5 ?
-                        <Animatable.View   animation="pulse" iterationCount="infinite"  delay={2000}  style={{position:'absolute' , bottom: '15%' , left : 0 , alignItems : 'center', justifyContent : 'center', width : '100%'}}>
+                        <Animatable.View   animation="pulse" iterationCount="infinite"  delay={2000}  style={{position:'absolute' , bottom: '12%' , left : 0 , alignItems : 'center', justifyContent : 'center', width : '100%'}}>
                             <TouchableOpacity onPress={()=>this.more()} style={[ styles.bg_blue2, styles.width_150, styles.height_50, styles.flexCenter ]}>
                                 <Text style={[ styles.textRegular, styles.text_White ]}>{I18n.translate('moreth')}</Text>
                             </TouchableOpacity>

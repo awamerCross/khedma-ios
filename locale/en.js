@@ -171,6 +171,7 @@ const en = {
     'choose_bank': 'choose the bank you wish to transfer to',
     'amount': 'Transfer amount',
     'logOut': 'Log out',
+    'noCon': 'no contact',
     'follow_us': 'Follow Us',
     'via_call': 'Contact phone',
     'phone': ' phone number',
@@ -273,6 +274,7 @@ const en = {
     'sw_location': 'change the location on the map',
     'dsss': 'register again ... to confirm your details',
     'vdieo': 'advertising video',
+    'noD': 'no description',
     'ff': 'there are no cities currently'
 }
 
