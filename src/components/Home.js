@@ -668,6 +668,7 @@ class Home extends React.Component {
                         </Button>
                     </Right>
                 </Header>
+
                 <Content scrollEnabled={false} contentContainerStyle={{ flexGrow: 1,flex: 1, height: Dimensions.get('window').height, paddingBottom : 100 }} >
                     <View style={[ styles.overHidden ]}>
                     <ScrollView showsHorizontalScrollIndicator={false} horizontal={true} style={styles.scroll}>

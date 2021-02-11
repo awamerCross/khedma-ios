@@ -2,12 +2,7 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="bc32b65a-b0f2-44fd-ba9a-13a7b461e61c" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/.expo/packager-info.json" beforeDir="false" afterPath="$PROJECT_DIR$/.expo/packager-info.json" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ReactotronConfig.js" beforeDir="false" afterPath="$PROJECT_DIR$/ReactotronConfig.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/locale/ar.js" beforeDir="false" afterPath="$PROJECT_DIR$/locale/ar.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/locale/en.js" beforeDir="false" afterPath="$PROJECT_DIR$/locale/en.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/components/DetilsE3lan.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/components/DetilsE3lan.js" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/components/Home.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/components/Home.js" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
@@ -43,7 +38,7 @@
             <entry file="file://$PROJECT_DIR$/src/components/FormE3lan.js">
               <provider selected="true" editor-type-id="text-editor">
                 <state relative-caret-position="249">
-                  <caret line="406" lean-forward="true" selection-start-line="406" selection-end-line="406" />
+                  <caret line="406" selection-start-line="406" selection-end-line="406" />
                   <folding>
                     <element signature="e#0#27#0" expanded="true" />
                     <element signature="e#805#835#0" expanded="true" />
@@ -91,7 +86,7 @@
             <entry file="file://$PROJECT_DIR$/src/components/Edit_ad.js">
               <provider selected="true" editor-type-id="text-editor">
                 <state relative-caret-position="202">
-                  <caret line="581" lean-forward="true" selection-start-line="581" selection-end-line="581" />
+                  <caret line="581" selection-start-line="581" selection-end-line="581" />
                   <folding>
                     <element signature="e#0#27#0" expanded="true" />
                     <element signature="e#1025#1069#0" expanded="true" />
@@ -117,8 +112,8 @@
           <file pinned="false" current-in-tab="true">
             <entry file="file://$PROJECT_DIR$/src/components/Home.js">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="7431">
-                  <caret line="880" column="57" selection-start-line="880" selection-start-column="57" selection-end-line="880" selection-end-column="57" />
+                <state relative-caret-position="229">
+                  <caret line="498" selection-start-line="498" selection-end-line="498" />
                   <folding>
                     <element signature="e#0#26#0" expanded="true" />
                     <element signature="n#!!block;n#toggleModal#0;n#Home#0" />
@@ -129,7 +124,9 @@
                     <element signature="n#!!block;n#componentWillUnmount#0;n#Home#0" />
                     <element signature="n#!!block;n#handleBackButtonClick#0;n#Home#0" />
                     <element signature="n#!!block;n#componentWillMount#0;n#Home#0" />
+                    <element signature="e#75623#79404#0" />
                     <element signature="e#76233#79323#0" />
+                    <element signature="e#80105#84647#0" />
                     <element signature="e#80073#83267#0" />
                     <element signature="n#!!block;n#more#0;n#Home#0" />
                     <element signature="n#!!block;n#getBlogsData#0;n#Home#0" />
@@ -143,6 +140,10 @@
                     <element signature="n#!!block;n#noResults#0;n#Home#0" />
                     <element signature="n#!!block;n#renderLoader#0;n#Home#0" />
                     <element signature="n#!!block;n#renderLoader#1;n#Home#0" />
+                    <element signature="e#92719#95106#0" />
+                    <element signature="e#95123#106489#0" />
+                    <element signature="e#106584#107155#0" />
+                    <element signature="e#107300#107726#0" />
                   </folding>
                 </state>
               </provider>
@@ -190,7 +191,7 @@
             <entry file="file://$PROJECT_DIR$/src/components/DetilsE3lan.js">
               <provider selected="true" editor-type-id="text-editor">
                 <state relative-caret-position="344">
-                  <caret line="160" lean-forward="true" selection-start-line="160" selection-end-line="160" />
+                  <caret line="160" selection-start-line="160" selection-end-line="160" />
                   <folding>
                     <element signature="e#0#41#0" expanded="true" />
                     <element signature="e#2378#2990#0" />
@@ -222,7 +223,7 @@
             <entry file="file://$PROJECT_DIR$/locale/ar.js">
               <provider selected="true" editor-type-id="text-editor">
                 <state relative-caret-position="431">
-                  <caret line="277" column="29" lean-forward="true" selection-start-line="277" selection-start-column="29" selection-end-line="278" selection-end-column="28" />
+                  <caret line="277" column="29" selection-start-line="277" selection-start-column="29" selection-end-line="278" selection-end-column="28" />
                 </state>
               </provider>
             </entry>
@@ -448,12 +449,12 @@
       <workItem from="1608809966446" duration="5548000" />
       <workItem from="1609054120867" duration="23447000" />
       <workItem from="1609670785428" duration="41878000" />
-      <workItem from="1612775116281" duration="26681000" />
+      <workItem from="1612775116281" duration="28763000" />
     </task>
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="282540000" />
+    <option name="totallyTimeSpent" value="284622000" />
   </component>
   <component name="ToolWindowManager">
     <frame x="0" y="23" width="1440" height="809" extended-state="0" />
@@ -955,7 +956,7 @@
     <entry file="file://$PROJECT_DIR$/src/components/Edit_ad.js">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="202">
-          <caret line="581" lean-forward="true" selection-start-line="581" selection-end-line="581" />
+          <caret line="581" selection-start-line="581" selection-end-line="581" />
           <folding>
             <element signature="e#0#27#0" expanded="true" />
             <element signature="e#1025#1069#0" expanded="true" />
@@ -980,7 +981,7 @@
     <entry file="file://$PROJECT_DIR$/src/components/FormE3lan.js">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="249">
-          <caret line="406" lean-forward="true" selection-start-line="406" selection-end-line="406" />
+          <caret line="406" selection-start-line="406" selection-end-line="406" />
           <folding>
             <element signature="e#0#27#0" expanded="true" />
             <element signature="e#805#835#0" expanded="true" />
@@ -1036,7 +1037,7 @@
     <entry file="file://$PROJECT_DIR$/locale/ar.js">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="431">
-          <caret line="277" column="29" lean-forward="true" selection-start-line="277" selection-start-column="29" selection-end-line="278" selection-end-column="28" />
+          <caret line="277" column="29" selection-start-line="277" selection-start-column="29" selection-end-line="278" selection-end-column="28" />
         </state>
       </provider>
     </entry>
@@ -1081,8 +1082,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/src/components/Home.js">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="7431">
-          <caret line="880" column="57" selection-start-line="880" selection-start-column="57" selection-end-line="880" selection-end-column="57" />
+        <state relative-caret-position="229">
+          <caret line="498" selection-start-line="498" selection-end-line="498" />
           <folding>
             <element signature="e#0#26#0" expanded="true" />
             <element signature="n#!!block;n#toggleModal#0;n#Home#0" />
@@ -1093,7 +1094,9 @@
             <element signature="n#!!block;n#componentWillUnmount#0;n#Home#0" />
             <element signature="n#!!block;n#handleBackButtonClick#0;n#Home#0" />
             <element signature="n#!!block;n#componentWillMount#0;n#Home#0" />
+            <element signature="e#75623#79404#0" />
             <element signature="e#76233#79323#0" />
+            <element signature="e#80105#84647#0" />
             <element signature="e#80073#83267#0" />
             <element signature="n#!!block;n#more#0;n#Home#0" />
             <element signature="n#!!block;n#getBlogsData#0;n#Home#0" />
@@ -1107,6 +1110,10 @@
             <element signature="n#!!block;n#noResults#0;n#Home#0" />
             <element signature="n#!!block;n#renderLoader#0;n#Home#0" />
             <element signature="n#!!block;n#renderLoader#1;n#Home#0" />
+            <element signature="e#92719#95106#0" />
+            <element signature="e#95123#106489#0" />
+            <element signature="e#106584#107155#0" />
+            <element signature="e#107300#107726#0" />
           </folding>
         </state>
       </provider>
